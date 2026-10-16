@@ -1,3 +1,0 @@
-﻿<Project>
-  <Import Project="../build/BarberBookingSystem.props" />
-</Project>
