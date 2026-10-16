@@ -45,17 +45,25 @@ builder.Services
 // Add services to the container.
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
+
 builder.Services.AddSwaggerGen(options =>
 {
+    options.SwaggerDoc("v1", new OpenApiInfo
+    {
+        Title = "BarberBookingSystem API",
+        Version = "v1"
+    });
+
     options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         Name = "Authorization",
         Type = SecuritySchemeType.Http,
         Scheme = "Bearer",
         BearerFormat = "JWT",
-        In = ParameterLocation.Header,
+        In = ParameterLocation.Header
     });
-    options.AddSecurityRequirement(new OpenApiSecurityRequirement()
+
+    options.AddSecurityRequirement(new OpenApiSecurityRequirement
     {
         {
             new OpenApiSecurityScheme
@@ -66,7 +74,7 @@ builder.Services.AddSwaggerGen(options =>
                     Id = "Bearer"
                 }
             },
-            Array.Empty<string>()
+            []
         }
     });
 });
@@ -75,14 +83,9 @@ builder.Services.AddControllers()
     .AddJsonOptions(x =>
         x.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles);
 
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(c =>
-{
-    c.SwaggerDoc("v1", new OpenApiInfo { Title = "Reservation API", Version = "v1" });
-});
 var app = builder.Build();
 
-if (app.Environment.IsDevelopment())
+if ( app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
@@ -94,4 +97,4 @@ app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 app.Run();
-    
+public partial class Program { }
