@@ -1,4 +1,4 @@
-namespace BarberBookingSystem.Common;
+namespace BarberBookingSystem.Services.Interfaces;
 
 public enum UserRole
 {

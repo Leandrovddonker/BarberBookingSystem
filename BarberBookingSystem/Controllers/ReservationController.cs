@@ -1,9 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
-using BarberBookingSystem.Common;
+using BarberBookingSystem.Services.Interfaces;
 using BarberBookingSystem.Models.Dtos;
 using Microsoft.AspNetCore.Authorization;
-using BarberBookingSystem.Exceptions;
 
 namespace BarberBookingSystem.Controllers;
 

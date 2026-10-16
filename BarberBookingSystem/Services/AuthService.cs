@@ -2,7 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using BarberBookingSystem.Common;
+using BarberBookingSystem.Services.Interfaces;
 using BarberBookingSystem.Data;
 using BarberBookingSystem.Exceptions;
 using BarberBookingSystem.Models;

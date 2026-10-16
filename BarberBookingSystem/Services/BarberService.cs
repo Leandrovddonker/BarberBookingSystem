@@ -1,4 +1,4 @@
-using BarberBookingSystem.Common;
+using BarberBookingSystem.Services.Interfaces;
 using BarberBookingSystem.Data;
 using BarberBookingSystem.Exceptions;
 using BarberBookingSystem.Models;

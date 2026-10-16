@@ -3,9 +3,9 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
-using Microsoft.AspNetCore.OpenApi;
 using BarberBookingSystem.Data;
-using BarberBookingSystem.Common;
+using BarberBookingSystem.Exceptions;
+using BarberBookingSystem.Services.Interfaces;
 using BarberBookingSystem.Services;
 
 

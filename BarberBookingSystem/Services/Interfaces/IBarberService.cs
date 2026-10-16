@@ -1,6 +1,6 @@
 using BarberBookingSystem.Models.Dtos;
 
-namespace BarberBookingSystem.Common;
+namespace BarberBookingSystem.Services.Interfaces;
 
 public interface IBarberService
 {

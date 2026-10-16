@@ -1,7 +1,6 @@
 using BarberBookingSystem.Models.Dtos;
-using BarberBookingSystem.Models;
 
-namespace BarberBookingSystem.Common;
+namespace BarberBookingSystem.Services.Interfaces;
 
 public interface IReservationService
 {

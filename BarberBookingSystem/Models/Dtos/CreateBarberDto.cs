@@ -1,4 +1,4 @@
-using BarberBookingSystem.Common;
+using BarberBookingSystem.Services.Interfaces;
 
 namespace BarberBookingSystem.Models.Dtos;
 

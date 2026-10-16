@@ -1,9 +1,8 @@
-using BarberBookingSystem.Common;
+using BarberBookingSystem.Services.Interfaces;
 using BarberBookingSystem.Data;
 using BarberBookingSystem.Exceptions;
 using BarberBookingSystem.Models.Dtos;
 using Microsoft.EntityFrameworkCore;
-using BarberBookingSystem.Models;
 
 namespace BarberBookingSystem.Services;
 
