@@ -1,11 +1,11 @@
+using BarberBookingSystem.Common;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using planeProject.Data;
-using planeProject.Common;
-using planeProject.Models;
-using planeProject.Models.Dtos;
+using BarberBookingSystem.Data;
+using BarberBookingSystem.Models;
+using BarberBookingSystem.Models.Dtos;
 
-namespace planeProject.Controllers;
+namespace BarberBookingSystem.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]

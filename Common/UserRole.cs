@@ -1,4 +1,4 @@
-namespace planeProject.Common;
+namespace BarberBookingSystem.Common;
 
 public enum UserRole
 {

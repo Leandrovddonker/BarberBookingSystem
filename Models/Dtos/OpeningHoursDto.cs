@@ -1,7 +1,7 @@
 using System.ComponentModel;
 using System.Text.Json.Serialization;
 
-namespace planeProject.Models.Dtos;
+namespace BarberBookingSystem.Models.Dtos;
 
 public class OpeningHoursDto
 {

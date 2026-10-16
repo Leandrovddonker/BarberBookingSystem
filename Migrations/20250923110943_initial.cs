@@ -4,7 +4,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-namespace planeProject.Migrations
+namespace BarberBookingSystem.Migrations
 {
     /// <inheritdoc />
     public partial class initial : Migration

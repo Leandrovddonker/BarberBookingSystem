@@ -1,8 +1,8 @@
-using planeProject.Models;
-using planeProject.Models.Dtos;
+using BarberBookingSystem.Models.Dtos;
+using BarberBookingSystem.Models;
 using Microsoft.AspNetCore.Mvc;
 
-namespace planeProject.Common;
+namespace BarberBookingSystem.Common;
 
 public interface IUserService
 {

@@ -1,6 +1,6 @@
-using planeProject.Common;
+using BarberBookingSystem.Common;
 
-namespace planeProject.Models.Dtos;
+namespace BarberBookingSystem.Models.Dtos;
 
 public class CreateBarberDto
 {

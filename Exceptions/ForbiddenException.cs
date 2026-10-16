@@ -1,3 +1,3 @@
-namespace planeProject.Exceptions;
+namespace BarberBookingSystem.Exceptions;
 
 public class ForbiddenException(string message) : Exception(message);

@@ -1,4 +1,4 @@
-namespace planeProject.Models;
+namespace BarberBookingSystem.Models;
 
 public class Barber
 {

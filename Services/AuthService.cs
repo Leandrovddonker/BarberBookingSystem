@@ -1,17 +1,17 @@
 using Microsoft.EntityFrameworkCore;
-using planeProject.Data;
-using planeProject.Common;
-using planeProject.Models;
-using planeProject.Models.Dtos;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using BarberBookingSystem.Common;
+using BarberBookingSystem.Data;
+using BarberBookingSystem.Exceptions;
+using BarberBookingSystem.Models;
+using BarberBookingSystem.Models.Dtos;
 using Microsoft.IdentityModel.Tokens;
-using planeProject.Exceptions;
 
-namespace planeProject.Services;
+namespace BarberBookingSystem.Services;
 
-public class AuthService(PlaneDbContext context, IConfiguration configuration) : IAuthService
+public class AuthService(BarberSystemDbContext context, IConfiguration configuration) : IAuthService
 {
     public async Task<UserDto> RegisterAsync(CreateUserDto user)
     {

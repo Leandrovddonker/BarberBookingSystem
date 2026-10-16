@@ -4,13 +4,13 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
 using Microsoft.AspNetCore.OpenApi;
-using planeProject.Data;
-using planeProject.Common;
-using planeProject.Services;
+using BarberBookingSystem.Data;
+using BarberBookingSystem.Common;
+using BarberBookingSystem.Services;
 
 
 var builder = WebApplication.CreateBuilder(args);
-builder.Services.AddDbContext<PlaneDbContext>(options =>
+builder.Services.AddDbContext<BarberSystemDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 builder.Services.AddScoped<IUserService, UserService>();

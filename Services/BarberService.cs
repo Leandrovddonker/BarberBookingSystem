@@ -1,13 +1,13 @@
+using BarberBookingSystem.Common;
+using BarberBookingSystem.Data;
+using BarberBookingSystem.Exceptions;
+using BarberBookingSystem.Models;
+using BarberBookingSystem.Models.Dtos;
 using Microsoft.EntityFrameworkCore;
-using planeProject.Data;
-using planeProject.Exceptions;
-using planeProject.Common;
-using planeProject.Models;
-using planeProject.Models.Dtos;
 
-namespace planeProject.Services;
+namespace BarberBookingSystem.Services;
 
-public class BarberService(PlaneDbContext context) : IBarberService
+public class BarberService(BarberSystemDbContext context) : IBarberService
 {
     public async Task<BarberDto> CreateBarberAsync(CreateBarberDto createBarberDto)
     {

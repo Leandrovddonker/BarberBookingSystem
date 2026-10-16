@@ -1,10 +1,10 @@
 using System.Numerics;
+using BarberBookingSystem.Models;
 using Microsoft.EntityFrameworkCore;
-using planeProject.Models;
 
-namespace planeProject.Data;
+namespace BarberBookingSystem.Data;
 
-public class PlaneDbContext(DbContextOptions<PlaneDbContext> options) : DbContext(options)
+public class BarberSystemDbContext(DbContextOptions<BarberSystemDbContext> options) : DbContext(options)
 {
     public DbSet<Reservation> Reservations { get; set; }
     public DbSet<User> Users { get; set; }

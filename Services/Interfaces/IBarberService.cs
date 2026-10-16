@@ -1,6 +1,6 @@
-using planeProject.Models.Dtos;
+using BarberBookingSystem.Models.Dtos;
 
-namespace planeProject.Common;
+namespace BarberBookingSystem.Common;
 
 public interface IBarberService
 {

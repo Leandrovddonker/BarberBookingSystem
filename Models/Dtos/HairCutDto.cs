@@ -1,4 +1,4 @@
-namespace planeProject.Models.Dtos;
+namespace BarberBookingSystem.Models.Dtos;
 
 public class HairCutDto
 {

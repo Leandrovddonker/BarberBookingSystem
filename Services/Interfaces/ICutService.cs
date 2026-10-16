@@ -1,6 +1,7 @@
-using planeProject.Models;
-using planeProject.Models.Dtos;
-namespace planeProject.Common;
+using BarberBookingSystem.Models;
+using BarberBookingSystem.Models.Dtos;
+
+namespace BarberBookingSystem.Common;
 
 public interface ICutService
 {

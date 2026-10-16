@@ -1,7 +1,7 @@
-using planeProject.Models;
-using planeProject.Models.Dtos;
+using BarberBookingSystem.Models;
+using BarberBookingSystem.Models.Dtos;
 
-namespace planeProject.Common;
+namespace BarberBookingSystem.Common;
 
 public interface IOpeningHoursService
 {

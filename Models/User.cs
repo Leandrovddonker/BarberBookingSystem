@@ -1,6 +1,6 @@
-using planeProject.Common;
+using BarberBookingSystem.Common;
 
-namespace planeProject.Models;
+namespace BarberBookingSystem.Models;
 
 public class User
 {

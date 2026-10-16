@@ -2,7 +2,7 @@
 
 #nullable disable
 
-namespace planeProject.Migrations
+namespace BarberBookingSystem.Migrations
 {
     /// <inheritdoc />
     public partial class mappedBarberWithReservations : Migration

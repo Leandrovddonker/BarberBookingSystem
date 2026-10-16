@@ -1,3 +1,3 @@
-namespace planeProject.Exceptions;
+namespace BarberBookingSystem.Exceptions;
 
 public class NotFoundException(string message) : Exception(message);

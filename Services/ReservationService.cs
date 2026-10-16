@@ -1,14 +1,14 @@
+using BarberBookingSystem.Common;
+using BarberBookingSystem.Data;
+using BarberBookingSystem.Exceptions;
+using BarberBookingSystem.Models;
+using BarberBookingSystem.Models.Dtos;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
-using planeProject.Data;
-using planeProject.Exceptions;
-using planeProject.Common;
-using planeProject.Models;
-using planeProject.Models.Dtos;
 
-namespace planeProject.Services;
+namespace BarberBookingSystem.Services;
 
-public class ReservationService(PlaneDbContext context) : IReservationService
+public class ReservationService(BarberSystemDbContext context) : IReservationService
 {
     public async Task<ReservationDto> CreateReservation(CreateReservationDto reservationDto, int userId)
     {
