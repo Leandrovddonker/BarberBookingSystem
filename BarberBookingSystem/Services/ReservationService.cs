@@ -117,8 +117,19 @@ public class ReservationService(BarberSystemDbContext context) : IReservationSer
         return listOfBarberReservations;
     }
 
-    public async Task<List<DateTime>> GetAvailableSlotsAsync(int barberId, int haircutId, DateOnly date)
+    public async Task<List<DateTime>> GetAvailableSlotsAsync(int barberId, int haircutId, DateOnly date,
+        int? excludeReservationId = null, int? userId = null, string? role = null)
     {
+        if (excludeReservationId.HasValue)
+        {
+            if (!userId.HasValue || (role != nameof(UserRole.Customer) && role != nameof(UserRole.Admin)))
+                throw new ForbiddenException("You are not allowed to reschedule this reservation.");
+
+            var reservation = await GetAuthorizedReservationAsync(excludeReservationId.Value, userId.Value, role);
+            if (reservation.BarberId != barberId || reservation.HaircutId != haircutId)
+                throw new BadRequestException("Availability must use the reservation's barber and haircut.");
+        }
+
         var openingHours = await context.OpeningHours
             .FirstOrDefaultAsync(h => h.Day == date.DayOfWeek);
         var haircut = await context.HairCuts.FirstOrDefaultAsync(h => h.Id == haircutId);
@@ -135,11 +146,11 @@ public class ReservationService(BarberSystemDbContext context) : IReservationSer
         {
             return [];
         }
-        return await GenerateAvailableSlotsAsync(barberId,haircut.DurationMinutes, date, openingHours);
+        return await GenerateAvailableSlotsAsync(barberId,haircut.DurationMinutes, date, openingHours, excludeReservationId);
     }
 
     private async Task<List<DateTime>> GenerateAvailableSlotsAsync(
-        int barberId, int durationMinutes, DateOnly date, OpeningHours openingHours)
+        int barberId, int durationMinutes, DateOnly date, OpeningHours openingHours, int? excludeReservationId)
     {
         var availableSlots = new List<DateTime>();
         var currentTime = date.ToDateTime(
@@ -159,6 +170,7 @@ public class ReservationService(BarberSystemDbContext context) : IReservationSer
             var utcEndTime = utcStartTime.AddMinutes(durationMinutes);
 
             var hasOverlap = reservations.Any(r =>
+                r.Id != excludeReservationId &&
                 utcStartTime < r.StartTime.AddMinutes(r.HairCut.DurationMinutes) &&
                 utcEndTime > r.StartTime);
 

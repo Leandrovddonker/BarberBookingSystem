@@ -10,5 +10,6 @@ public interface IReservationService
     Task<List<ReservationDto>> GetMyReservationsAsync(int userId);
     Task<List<BarberReservationDto>> GetBarberReservationsAsync(int barberId);
     Task<List<ReservationDto>> GetAllReservationsAsync();
-    Task<List<DateTime>> GetAvailableSlotsAsync(int barberId, int haircutId, DateOnly date);
+    Task<List<DateTime>> GetAvailableSlotsAsync(int barberId, int haircutId, DateOnly date,
+        int? excludeReservationId = null, int? userId = null, string? role = null);
 }
