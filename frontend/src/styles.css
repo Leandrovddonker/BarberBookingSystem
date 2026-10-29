@@ -1,0 +1,5 @@
+/* Import order preserves the original shared cascade and responsive overrides. */
+@import './styles/base.css';
+@import './styles/storefront.css';
+@import './styles/forms-and-dashboards.css';
+@import './styles/responsive.css';

@@ -1,0 +1,81 @@
+<section class="auth-layout">
+  <div class="auth-intro">
+    <p class="eyebrow">WELCOME TO THE BARBER ROOM</p>
+    <h1>
+      Good to
+      <br />
+      see
+      <em>you.</em>
+    </h1>
+    <p>Your next fresh cut is a few clicks away.</p>
+    <span class="large-scissors" aria-hidden="true">✂</span>
+  </div>
+  <div class="panel auth-panel">
+    <p class="eyebrow">A CHAIR WITH YOUR NAME ON IT</p>
+    <h2>{{ register ? 'Make yourself at home.' : 'Welcome back.' }}</h2>
+    <p>
+      {{
+        register
+          ? 'Create an account to book and manage your visits.'
+          : 'Sign in to book your next visit.'
+      }}
+    </p>
+    <form [formGroup]="form" (ngSubmit)="submit()">
+      @if (register) {
+        <label>
+          Full name
+          <input formControlName="name" autocomplete="name" required />
+        </label>
+        <label>
+          Phone number
+          <input
+            formControlName="phoneNumber"
+            type="tel"
+            autocomplete="tel"
+            required
+          />
+        </label>
+      }
+      <label>
+        Email address
+        <input
+          formControlName="email"
+          type="email"
+          autocomplete="email"
+          required
+        />
+      </label>
+      <label>
+        Password
+        <input
+          formControlName="password"
+          type="password"
+          [autocomplete]="register ? 'new-password' : 'current-password'"
+          required
+        />
+      </label>
+      @if (invalid()) {
+        <p class="error" role="alert">
+          Please complete all fields and enter a valid email address.
+        </p>
+      }
+      @if (error()) {
+        <p class="error" role="alert">{{ error() }}</p>
+      }
+      <button class="button full" [disabled]="busy()">
+        {{
+          busy() ? 'Please wait…' : register ? 'Create account ↗' : 'Sign in ↗'
+        }}
+      </button>
+    </form>
+    <p class="auth-switch">
+      {{ register ? 'Already part of the shop?' : 'First time here?' }}
+      <a
+        [routerLink]="register ? '/login' : '/register'"
+        [queryParams]="{ returnUrl: returnUrl }"
+      >
+        {{ register ? 'Sign in' : 'Create an account' }}
+      </a>
+    </p>
+  </div>
+</section>

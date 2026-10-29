@@ -1,0 +1,163 @@
+<section class="hero">
+  <div class="hero-copy">
+    <p class="eyebrow">YOUR NEXT GOOD HAIR DAY STARTS HERE</p>
+    <h1>
+      Look sharp.
+      <br />
+      Feel like
+      <em>yourself.</em>
+    </h1>
+    <p class="hero-description">
+      Great hair. An easy conversation. A little time just for you. Find your
+      barber and settle into the chair.
+    </p>
+    <div class="actions">
+      <a class="button" routerLink="/book">
+        Find your next cut
+        <span>↗</span>
+      </a>
+      <a class="underlink" href="#services">Explore the services ↓</a>
+    </div>
+    <div class="hero-note">
+      <span class="seal" aria-hidden="true">✦</span>
+      <span>
+        Classic craft. A fresh perspective.
+        <br />
+        <small>Book online. We’ll take it from here.</small>
+      </span>
+    </div>
+  </div>
+  <div
+    class="hero-art"
+    role="img"
+    aria-label="Illustration of a classic barber chair"
+  >
+    <span class="art-label">THE ART OF A GOOD CUT</span>
+    <div class="art-circle"></div>
+    <div class="chair">
+      <div class="chair-head"></div>
+      <div class="chair-back"></div>
+      <div class="chair-seat"></div>
+      <div class="chair-arm left"></div>
+      <div class="chair-arm right"></div>
+      <div class="chair-stem"></div>
+      <div class="chair-base"></div>
+      <div class="chair-foot"></div>
+    </div>
+    <span class="art-bottom">TAKE A SEAT. LEAVE REFRESHED.</span>
+    <span class="art-spark">✳</span>
+  </div>
+</section>
+<div class="ticker">
+  <span>PRECISION CUTS</span>
+  <i>✦</i>
+  <span>PERSONAL SERVICE</span>
+  <i>✦</i>
+  <span>YOUR STYLE, REFINED</span>
+  <i>✦</i>
+  <span>A CHAIR WITH YOUR NAME ON IT</span>
+</div>
+@if (loading()) {
+  <p class="notice" role="status">Getting the shop ready…</p>
+}
+@if (error()) {
+  <div class="notice error" role="alert">
+    {{ error() }}
+    <button class="text-button" (click)="load()">Try again</button>
+  </div>
+}
+<section id="services" class="section">
+  <div class="section-heading">
+    <div>
+      <p class="eyebrow">THE MENU</p>
+      <h2>A fresh take on your usual.</h2>
+    </div>
+    <p>
+      Keep it classic or change it up.
+      <br />
+      There’s a cut for every kind of day.
+    </p>
+  </div>
+  <div class="service-grid">
+    @for (cut of cuts(); track cut.id) {
+      <a
+        class="service-card"
+        routerLink="/book"
+        [queryParams]="{ haircutId: cut.id }"
+      >
+        <span class="service-icon" aria-hidden="true">✂</span>
+        <h3>{{ cut.cut }}</h3>
+        <p>{{ cut.durationMinutes }} minutes · Made for you</p>
+        <div class="card-bottom">
+          <strong>{{ cut.price | currency: 'EUR' }}</strong>
+          <span class="circle-arrow" aria-hidden="true">↗</span>
+        </div>
+      </a>
+    } @empty {
+      @if (!loading() && !error()) {
+        <p class="empty">
+          Our service menu is being prepared. Check back soon.
+        </p>
+      }
+    }
+  </div>
+</section>
+<section class="section barbers-section">
+  <div class="section-heading">
+    <div>
+      <p class="eyebrow">THE PEOPLE BEHIND THE CRAFT</p>
+      <h2>Find your kind of barber.</h2>
+    </div>
+    <p>
+      Skilled hands. Individual style.
+      <br />
+      Your next regular starts here.
+    </p>
+  </div>
+  <div class="barber-grid">
+    @for (barber of barbers(); track barber.id; let index = $index) {
+      <article class="barber-card">
+        <div class="barber-avatar" [class.alternate]="index % 2 === 1">
+          <span>{{ initials(barber.name) }}</span>
+          <small>THE BARBER ROOM</small>
+          <span class="avatar-scissors" aria-hidden="true">✂</span>
+        </div>
+        <div class="barber-info">
+          <h3>{{ barber.name }}</h3>
+          <p>
+            {{ barber.description || 'A personal approach to a great cut.' }}
+          </p>
+          <a
+            class="underlink"
+            routerLink="/book"
+            [queryParams]="{ barberId: barber.id }"
+          >
+            Book with {{ barber.name.split(' ')[0] }} ↗
+          </a>
+        </div>
+      </article>
+    } @empty {
+      @if (!loading() && !error()) {
+        <p class="empty">Our team will be available here soon.</p>
+      }
+    }
+  </div>
+</section>
+<section class="shop-strip">
+  <div>
+    <p class="eyebrow">MAKE TIME FOR A GOOD CUT</p>
+    <h2>Your chair is waiting.</h2>
+    <a class="button light" routerLink="/book">Let’s get you booked ↗</a>
+  </div>
+  <div>
+    <h3>Shop hours</h3>
+    @for (hours of hours(); track hours.id) {
+      <div class="hours-row">
+        <span>{{ days[hours.day] }}</span>
+        <span>{{ hoursLabel(hours) }}</span>
+      </div>
+    } @empty {
+      <p>Opening hours will appear here when available.</p>
+    }
+  </div>
+</section>

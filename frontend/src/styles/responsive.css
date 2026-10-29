@@ -1,0 +1,241 @@
+@media (min-width: 1441px) {
+  .hero {
+    padding-top: 80px;
+    padding-bottom: 90px;
+  }
+  .hero-art {
+    height: 530px;
+  }
+}
+@media (max-width: 1000px) {
+  header {
+    gap: 15px;
+  }
+  nav {
+    gap: 15px;
+  }
+  .brand {
+    font-size: 12px;
+  }
+  .hero {
+    gap: 30px;
+  }
+  .hero-art {
+    height: 420px;
+  }
+  .hero .actions {
+    gap: 15px;
+  }
+  .hero .underlink {
+    font-size: 11px;
+  }
+  .barber-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .reservation-card {
+    grid-template-columns: 180px 1fr;
+  }
+  .reservation-actions {
+    grid-column: 2;
+  }
+  .admin-row {
+    flex-wrap: wrap;
+  }
+  footer {
+    flex-wrap: wrap;
+  }
+  .shop-strip {
+    gap: 40px;
+  }
+}
+@media (max-width: 700px) {
+  header {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 20px 6%;
+  }
+  .brand {
+    font-size: 13px;
+  }
+  .brand-icon {
+    width: 40px;
+    height: 40px;
+    font-size: 29px;
+  }
+  nav {
+    gap: 16px;
+    flex-wrap: wrap;
+    font-size: 12px;
+    justify-content: space-between;
+  }
+  nav .button.small {
+    padding: 10px 14px;
+  }
+  nav .text-button {
+    padding: 0;
+    font-size: 12px;
+  }
+  .hero {
+    grid-template-columns: 1fr;
+    padding: 40px 6%;
+    gap: 35px;
+  }
+  .hero h1 {
+    font-size: 3.5rem;
+  }
+  .hero-note {
+    margin-top: 25px;
+  }
+  .hero-art {
+    height: 370px;
+    border-radius: 130px 130px 4px 4px;
+  }
+  .hero-art .chair {
+    transform: scale(0.85) rotate(-9deg);
+  }
+  .art-circle {
+    height: 250px;
+    width: 250px;
+    top: 70px;
+  }
+  .ticker {
+    overflow: hidden;
+    justify-content: flex-start;
+    white-space: nowrap;
+    font-size: 9px;
+    padding: 18px 6%;
+  }
+  .ticker span:last-child {
+    display: none;
+  }
+  .section {
+    padding: 45px 6%;
+  }
+  .section-heading {
+    display: block;
+  }
+  .section-heading > p {
+    margin-top: 18px;
+  }
+  .service-grid {
+    grid-template-columns: 1fr;
+  }
+  .service-card {
+    padding: 24px;
+  }
+  .service-icon {
+    margin-bottom: 15px;
+  }
+  .barber-grid {
+    grid-template-columns: 1fr;
+  }
+  .barber-avatar {
+    height: 270px;
+  }
+  .shop-strip {
+    grid-template-columns: 1fr;
+    padding: 40px 6%;
+    gap: 40px;
+  }
+  .shop-strip h2 {
+    font-size: 2.4rem;
+  }
+  footer {
+    padding: 28px 6%;
+    flex-direction: column;
+    align-items: start;
+    gap: 18px;
+  }
+  .booking-layout {
+    grid-template-columns: 1fr;
+    padding: 0 6% 45px;
+    gap: 20px;
+  }
+  .booking-summary {
+    position: static;
+    grid-row: 1;
+  }
+  .booking-summary .summary-scissors {
+    display: none;
+  }
+  .booking-summary h2 {
+    font-size: 1.6rem;
+  }
+  .booking-summary .eyebrow {
+    margin-bottom: 15px;
+  }
+  .booking-summary hr {
+    margin: 16px 0;
+  }
+  .booking-summary .summary-row {
+    margin: 12px 0;
+  }
+  .panel {
+    padding: 24px;
+  }
+  .page-heading {
+    padding-bottom: 22px;
+  }
+  .auth-layout {
+    grid-template-columns: 1fr;
+    gap: 20px;
+    padding: 35px 6%;
+  }
+  .auth-intro h1 {
+    font-size: 2.8rem;
+  }
+  .auth-intro h1 br {
+    display: none;
+  }
+  .auth-intro .large-scissors {
+    display: none;
+  }
+  .auth-intro .eyebrow {
+    margin-bottom: 15px;
+  }
+  .auth-panel {
+    padding: 25px;
+  }
+  .admin-grid {
+    grid-template-columns: 1fr;
+  }
+  .compact {
+    padding-top: 10px;
+  }
+  .reservation-card {
+    grid-template-columns: 1fr;
+    padding: 23px;
+    gap: 18px;
+  }
+  .reservation-actions {
+    grid-column: auto;
+    flex-wrap: wrap;
+  }
+  .notice {
+    margin: 15px 6%;
+  }
+  .compact .notice {
+    margin: 15px 0;
+  }
+  .page-heading .section-heading .button {
+    margin-top: 20px;
+  }
+  .step-label {
+    margin-top: 25px;
+  }
+  .button {
+    padding: 15px 20px;
+  }
+  .form-row {
+    gap: 12px;
+  }
+  .admin-row .actions {
+    flex-wrap: wrap;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+}
