@@ -1,0 +1,105 @@
+<section class="section page-heading">
+  <p class="eyebrow">A LITTLE TIME FOR YOURSELF</p>
+  <h1>
+    Make it a
+    <em>good hair day.</em>
+  </h1>
+  <p>Choose your cut, find your barber, and we’ll save you a chair.</p>
+</section>
+<section class="booking-layout">
+  <div class="panel">
+    <div class="step-label">
+      01
+      <span>THE DETAILS</span>
+    </div>
+    <form [formGroup]="form" (ngSubmit)="submit()">
+      <label>
+        Your barber
+        <select formControlName="barberId">
+          <option [ngValue]="0">Choose a barber</option>
+          @for (barber of barbers(); track barber.id) {
+            <option [ngValue]="barber.id">{{ barber.name }}</option>
+          }
+        </select>
+      </label>
+      <label>
+        Your service
+        <select formControlName="hairCutId">
+          <option [ngValue]="0">Choose a service</option>
+          @for (cut of cuts(); track cut.id) {
+            <option [ngValue]="cut.id">
+              {{ cut.cut }} · {{ cut.durationMinutes }} min ·
+              {{ cut.price | currency: 'EUR' }}
+            </option>
+          }
+        </select>
+      </label>
+      <label>
+        Your date
+        <input type="date" formControlName="date" [min]="today" />
+      </label>
+      <div class="step-label">
+        02
+        <span>FIND YOUR MOMENT</span>
+      </div>
+      <p class="muted">All times are local to the shop · Europe/Amsterdam</p>
+      @if (slotLoading()) {
+        <p role="status">Finding available chairs…</p>
+      }
+      <div class="slots" role="group" aria-label="Available appointment times">
+        @for (slot of slots(); track slot) {
+          <button
+            type="button"
+            class="slot"
+            [class.selected]="selected() === slot"
+            [attr.aria-pressed]="selected() === slot"
+            (click)="selected.set(slot)"
+          >
+            {{ time(slot) }}
+          </button>
+        }
+      </div>
+      @if (!slotLoading() && !slots().length) {
+        <p class="empty">
+          {{ emptySlotsMessage() }}
+        </p>
+      }
+      @if (error()) {
+        <p class="error" role="alert">{{ error() }}</p>
+      }
+      <button
+        class="button full"
+        [disabled]="!selected() || busy() || slotLoading()"
+      >
+        {{ busy() ? 'Saving your chair…' : 'Confirm appointment ↗' }}
+      </button>
+    </form>
+  </div>
+  <aside class="panel booking-summary">
+    <p class="eyebrow">YOUR NEXT VISIT</p>
+    <span class="summary-scissors" aria-hidden="true">✂</span>
+    <h2>{{ cut()?.cut || 'A fresh start.' }}</h2>
+    <p>{{ barber()?.name || 'Your barber, your style.' }}</p>
+    <hr />
+    <div class="summary-row">
+      <span>Time in the chair</span>
+      <strong>{{ cut() ? cut()!.durationMinutes + ' minutes' : '—' }}</strong>
+    </div>
+    <div class="summary-row">
+      <span>Your date</span>
+      <strong>{{ form.controls.date.value }}</strong>
+    </div>
+    <div class="summary-row">
+      <span>Your time</span>
+      <strong>{{ selected() ? time(selected()) : 'Choose a time' }}</strong>
+    </div>
+    <hr />
+    <div class="summary-row">
+      <span>Total</span>
+      <strong>{{ cut() ? (cut()!.price | currency: 'EUR') : '—' }}</strong>
+    </div>
+    <p class="muted">
+      Need to change plans? Manage your appointment from your reservations.
+    </p>
+  </aside>
+</section>

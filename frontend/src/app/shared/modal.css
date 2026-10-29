@@ -1,0 +1,54 @@
+:host {
+  display: contents;
+}
+
+dialog {
+  width: min(42rem, calc(100vw - 2rem));
+  max-width: none;
+  max-height: calc(100dvh - 2rem);
+  margin: auto;
+  padding: 0;
+  overflow: auto;
+  overscroll-behavior: contain;
+  color: var(--ink);
+  background: #fffef9;
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  box-shadow: 0 20px 70px #242b2540;
+}
+
+dialog::backdrop {
+  background: #242b2580;
+}
+
+.modal-header {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  padding: 28px 32px 18px;
+  background: #fffef9;
+  border-bottom: 1px solid var(--line);
+}
+
+.modal-header h2 {
+  margin: 0;
+  font-size: 1.9rem;
+}
+
+.modal-header h2:focus {
+  outline: none;
+}
+
+.modal-body {
+  padding: 24px 32px 32px;
+}
+
+@media (max-width: 700px) {
+  .modal-header {
+    padding: 24px 24px 18px;
+  }
+
+  .modal-body {
+    padding: 20px 24px 24px;
+  }
+}

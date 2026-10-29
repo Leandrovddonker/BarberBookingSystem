@@ -13,3 +13,8 @@
 *.user
 *.suo
 *.DotSettings.user
+.DS_Store
+node_modules/
+dist/
+.angular/
+out-tsc/

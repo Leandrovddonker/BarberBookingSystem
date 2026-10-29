@@ -1,0 +1,42 @@
+<a class="skip-link" href="#main">Skip to content</a>
+<header>
+  <a class="brand" routerLink="/">
+    <span class="brand-icon" aria-hidden="true">✂</span>
+    <span>
+      THE BARBER ROOM
+      <small>GOOD CUTS. GOOD COMPANY.</small>
+    </span>
+  </a>
+  <nav aria-label="Main navigation">
+    <a
+      routerLink="/"
+      routerLinkActive="active"
+      [routerLinkActiveOptions]="{ exact: true }"
+    >
+      The shop
+    </a>
+    @if (auth.claims()) {
+      <a routerLink="/dashboard" routerLinkActive="active">
+        {{ auth.claims()?.role === 'Barber' ? 'My schedule' : 'Reservations' }}
+      </a>
+      @if (auth.claims()?.role === 'Admin') {
+        <a routerLink="/admin" routerLinkActive="active">Manage shop</a>
+      }
+      <button class="text-button" (click)="auth.logout()">Sign out</button>
+    } @else {
+      <a routerLink="/login" routerLinkActive="active">Sign in</a>
+    }
+    @if (!auth.claims() || auth.claims()?.role === 'Customer') {
+      <a class="button small" routerLink="/book">
+        Book a chair
+        <span aria-hidden="true">↗</span>
+      </a>
+    }
+  </nav>
+</header>
+<main id="main"><router-outlet /></main>
+<footer>
+  <a class="brand" routerLink="/">THE BARBER ROOM</a>
+  <span>A little time for yourself. A cut that feels like you.</span>
+  <span>All appointment times · Europe/Amsterdam</span>
+</footer>

@@ -1,0 +1,218 @@
+<section class="section page-heading">
+  <p class="eyebrow">YOUR LITTLE CORNER OF THE SHOP</p>
+  <div class="section-heading">
+    <div>
+      <h1 #appointmentsHeading id="appointments-heading" tabindex="-1">
+        {{ heading }}
+      </h1>
+      <p>{{ description }}</p>
+    </div>
+    @if (role === 'Customer') {
+      <a class="button" routerLink="/book">Book another visit ↗</a>
+    }
+  </div>
+</section>
+<section class="section compact">
+  @if (message()) {
+    <p class="notice success" role="status">{{ message() }}</p>
+  }
+  @if (error() && !editing() && !cancelTarget()) {
+    <p class="notice error" role="alert">
+      {{ error() }}
+      <button class="text-button" (click)="load()">Reload</button>
+    </p>
+  }
+  @if (loading()) {
+    <p role="status">Opening the appointment book…</p>
+  }
+  @if (!loading() && !error() && !reservations().length && !schedule().length) {
+    <div class="panel empty">
+      <h2>A little room in the diary.</h2>
+      <p>No reservations to show yet.</p>
+      @if (role === 'Customer') {
+        <a class="underlink" routerLink="/book">Find your next cut ↗</a>
+      }
+    </div>
+  }
+  <div
+    class="reservation-list"
+    [class.scrollable-list]="role === 'Admin'"
+    [attr.role]="role === 'Admin' ? 'region' : null"
+    [attr.aria-labelledby]="role === 'Admin' ? 'appointments-heading' : null"
+    [attr.tabindex]="role === 'Admin' ? 0 : null"
+  >
+    @for (reservation of reservations(); track reservation.id) {
+      <article class="reservation-card">
+        <div class="reservation-date">
+          <span>
+            {{ past(reservation.startTime) ? 'PAST VISIT' : 'UPCOMING' }}
+          </span>
+          <strong>{{ when(reservation.startTime) }}</strong>
+        </div>
+        <div>
+          <h3>{{ cutName(reservation.hairCutId) }}</h3>
+          <p>
+            With {{ barberName(reservation.barberId) }} · Reservation #{{
+              reservation.id
+            }}
+          </p>
+          @if (role === 'Admin') {
+            <p>{{ userName(reservation.userId) }}</p>
+          }
+        </div>
+        <div class="reservation-actions">
+          <button
+            class="underlink"
+            [disabled]="busy() || past(reservation.startTime)"
+            (click)="beginEdit(reservation)"
+          >
+            Reschedule
+          </button>
+          <button
+            class="text-button danger"
+            [disabled]="busy() || past(reservation.startTime)"
+            (click)="beginCancellation(reservation)"
+          >
+            Cancel visit
+          </button>
+        </div>
+      </article>
+    }
+    @for (reservation of schedule(); track reservation.id) {
+      <article class="reservation-card">
+        <div class="reservation-date">
+          <strong>{{ when(reservation.startTime) }}</strong>
+          <span>UNTIL {{ time(reservation.endTime) }}</span>
+        </div>
+        <div>
+          <h3>{{ reservation.customerName }}</h3>
+          <p>
+            {{ reservation.haircutName }} ·
+            {{ reservation.durationMinutes }} min
+          </p>
+          <a [href]="'tel:' + reservation.phoneNumber">
+            {{ reservation.phoneNumber }}
+          </a>
+        </div>
+      </article>
+    }
+  </div>
+  @if (cancelTarget(); as reservation) {
+    <app-modal
+      title="Cancel this visit?"
+      [fallbackFocus]="appointmentsHeading"
+      [busy]="busy()"
+      (dismissed)="closeCancellation()"
+    >
+      <p>
+        {{ when(reservation.startTime) }} · {{ cutName(reservation.hairCutId) }}
+      </p>
+      @if (error()) {
+        <p class="error" role="alert">{{ error() }}</p>
+      }
+      <div class="actions">
+        <button
+          type="button"
+          class="text-button"
+          [disabled]="busy()"
+          (click)="closeCancellation()"
+        >
+          Cancel
+        </button>
+        <button
+          type="button"
+          class="button"
+          [disabled]="busy()"
+          (click)="cancel(reservation)"
+        >
+          {{ busy() ? 'Cancelling…' : 'Confirm cancellation' }}
+        </button>
+      </div>
+    </app-modal>
+  }
+  @if (editing(); as reservation) {
+    <app-modal
+      title="Find a new moment."
+      [fallbackFocus]="appointmentsHeading"
+      [busy]="busy()"
+      (dismissed)="cancelEdit()"
+    >
+      <p>
+        {{ cutName(reservation.hairCutId) }} with
+        {{ barberName(reservation.barberId) }} · Amsterdam time
+      </p>
+      <form [formGroup]="editForm" (ngSubmit)="save(reservation)">
+        <label>
+          New date
+          <input
+            type="date"
+            formControlName="date"
+            [min]="today"
+            [readOnly]="busy()"
+            (change)="loadSlots(reservation)"
+          />
+        </label>
+        <button
+          class="underlink"
+          type="button"
+          [disabled]="busy()"
+          (click)="loadSlots(reservation)"
+        >
+          Refresh available times
+        </button>
+        @if (slotLoading()) {
+          <p role="status">Finding times…</p>
+        }
+        @if (
+          editForm.controls.date.invalid || editForm.controls.date.value < today
+        ) {
+          <p class="error" role="alert">Choose today or a future date.</p>
+        }
+        @if (error()) {
+          <p class="error" role="alert">{{ error() }}</p>
+        }
+        <div
+          class="slots"
+          role="group"
+          aria-label="Available appointment times"
+        >
+          @for (slot of slots(); track slot) {
+            <button
+              type="button"
+              class="slot"
+              [disabled]="busy()"
+              [class.selected]="selected() === slot"
+              [attr.aria-pressed]="selected() === slot"
+              (click)="selected.set(slot)"
+            >
+              {{ time(slot) }}
+            </button>
+          }
+        </div>
+        @if (!slotLoading() && !slots().length) {
+          <p class="muted">
+            No available times for this date. Try another date.
+          </p>
+        }
+        <div class="actions">
+          <button
+            class="button"
+            [disabled]="
+              !selected() || busy() || slotLoading() || editForm.invalid
+            "
+          >
+            {{ busy() ? 'Rescheduling…' : 'Confirm Reschedule' }}
+          </button>
+          <button
+            class="text-button"
+            type="button"
+            [disabled]="busy()"
+            (click)="cancelEdit()"
+          >
+            Cancel
+          </button>
+        </div>
+      </form>
+    </app-modal>
+  }
+</section>
