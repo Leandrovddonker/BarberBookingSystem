@@ -16,6 +16,7 @@ import { Auth } from '../src/app/core/auth';
 import {
   CreateReservationDto,
   OpeningHoursDto,
+  OpeningHours,
   Reservation,
 } from '../src/app/core/models';
 import { Booking } from '../src/app/pages/booking';
@@ -301,45 +302,133 @@ test('registration validates required details, registers before login, and rejec
   }
 });
 
-test('admin hours edits retain the disabled day and serialize HH:mm:ss, while duplicates remain blocked', () => {
-  const hours = {
-    id: 1,
-    day: 1,
-    openingTime: '09:00:00',
-    closingTime: '18:00:00',
-  };
+function setupOpeningHours(initialRecords: OpeningHours[]) {
+  let records = initialRecords.map((record) => ({ ...record }));
+  const creates: OpeningHoursDto[] = [];
   const updates: { day: number; body: OpeningHoursDto }[] = [];
-  let creates = 0;
   const injector = createInjector({
     cuts: () => of([]),
-    hours: () => of([hours]),
     users: () => of([]),
     barbers: () => of([]),
-    updateHours: (day, body) => {
-      updates.push({ day, body });
+    hours: () => of(records.map((record) => ({ ...record }))),
+    createHours: (body) => {
+      creates.push(body);
+      records.push({ id: records.length + 1, ...body });
       return of(body);
     },
-    createHours: (body) => {
-      creates++;
+    updateHours: (day, body) => {
+      updates.push({ day, body });
+      records = records.map((record) =>
+        record.day === day ? { ...record, ...body } : record,
+      );
       return of(body);
     },
   });
+  const admin = runInInjectionContext(injector, () => new Admin());
+  return { admin, injector, creates, updates };
+}
+
+test('opening hours always show Monday through Sunday without creating records on load or cancel', () => {
+  const { admin, injector, creates, updates } = setupOpeningHours([]);
   try {
-    const admin = runInInjectionContext(injector, () => new Admin());
-    admin.editHours(hours);
-    assert.equal(admin.hoursForm.controls.day.disabled, true);
-    admin.hoursForm.patchValue({ closingTime: '17:00' });
+    assert.deepEqual(
+      admin.weekdays().map((weekday) => weekday.day),
+      [1, 2, 3, 4, 5, 6, 0],
+    );
+    assert.ok(admin.weekdays().every((weekday) => !weekday.record));
+    assert.equal(admin.editingDay(), null);
+    assert.deepEqual(creates, []);
+    admin.editHours(1);
+    assert.equal(admin.hoursForm.controls.closed.value, true);
+    assert.equal(admin.hoursForm.controls.openingTime.disabled, true);
+    admin.resetHours();
     admin.saveHours();
+    assert.equal(admin.editingDay(), null);
+    assert.deepEqual(creates, []);
+    assert.deepEqual(updates, []);
+  } finally {
+    injector.destroy();
+  }
+});
+
+test('saving missing Sunday creates once; subsequent edits update the saved day', () => {
+  const { admin, injector, creates, updates } = setupOpeningHours([]);
+  try {
+    admin.editHours(0);
+    admin.saveHours();
+    assert.deepEqual(creates, [
+      { day: 0, openingTime: '00:00:00', closingTime: '00:00:00' },
+    ]);
+    assert.equal(admin.editingDay(), null);
+    assert.equal(admin.weekdays()[6].record?.day, 0);
+    admin.editHours(0);
+    admin.hoursForm.controls.closed.setValue(false);
+    admin.toggleClosed();
+    admin.hoursForm.patchValue({ openingTime: '10:00', closingTime: '16:30' });
+    admin.saveHours();
+    assert.equal(creates.length, 1);
     assert.deepEqual(updates, [
       {
-        day: 1,
-        body: { day: 1, openingTime: '09:00:00', closingTime: '17:00:00' },
+        day: 0,
+        body: { day: 0, openingTime: '10:00:00', closingTime: '16:30:00' },
       },
     ]);
-    assert.equal(admin.hoursForm.controls.day.enabled, true);
+  } finally {
+    injector.destroy();
+  }
+});
+
+test('existing opening hours update by weekday and can be marked closed', () => {
+  const { admin, injector, creates, updates } = setupOpeningHours([
+    { id: 42, day: 1, openingTime: '09:00:00', closingTime: '18:00:00' },
+  ]);
+  try {
+    assert.equal(admin.weekdays()[0].record?.id, 42);
+    assert.equal(admin.weekdays()[1].record, undefined);
+    admin.editHours(1);
+    admin.hoursForm.patchValue({ closingTime: '17:00' });
     admin.saveHours();
-    assert.equal(creates, 0);
-    assert.match(admin.error(), /already has opening hours/);
+    assert.deepEqual(updates[0], {
+      day: 1,
+      body: { day: 1, openingTime: '09:00:00', closingTime: '17:00:00' },
+    });
+    admin.editHours(1);
+    admin.hoursForm.controls.closed.setValue(true);
+    admin.toggleClosed();
+    admin.saveHours();
+    assert.deepEqual(updates[1], {
+      day: 1,
+      body: { day: 1, openingTime: '00:00:00', closingTime: '00:00:00' },
+    });
+    assert.deepEqual(creates, []);
+    assert.equal(openingHoursLabel(admin.weekdays()[0].record!), 'Closed');
+  } finally {
+    injector.destroy();
+  }
+});
+
+test('open days require valid increasing times; a missing day is created only on a valid save', () => {
+  const { admin, injector, creates, updates } = setupOpeningHours([]);
+  try {
+    admin.editHours(2);
+    admin.hoursForm.controls.closed.setValue(false);
+    admin.toggleClosed();
+    admin.hoursForm.patchValue({ openingTime: '10:00', closingTime: '09:00' });
+    admin.saveHours();
+    assert.match(admin.error(), /Closing time must be after opening time/);
+    admin.hoursForm.patchValue({ closingTime: '10:00' });
+    admin.saveHours();
+    assert.deepEqual(creates, []);
+    admin.hoursForm.patchValue({ openingTime: '' });
+    admin.saveHours();
+    assert.equal(admin.hoursForm.invalid, true);
+    assert.deepEqual(creates, []);
+    admin.hoursForm.patchValue({ openingTime: '09:00', closingTime: '18:00' });
+    admin.saveHours();
+    assert.deepEqual(creates, [
+      { day: 2, openingTime: '09:00:00', closingTime: '18:00:00' },
+    ]);
+    assert.deepEqual(updates, []);
   } finally {
     injector.destroy();
   }
@@ -398,19 +487,19 @@ test('deletion cancellation sends no request; confirmation blocks duplicate subm
     },
     users: () => of([]),
     barbers: () => of([]),
-    deleteHours: (id) => {
+    deleteCut: (id) => {
       deletions.push(id);
       return pending;
     },
   });
   try {
     const admin = runInInjectionContext(injector, () => new Admin());
-    admin.askDelete('OpeningHours', 9, 'Monday');
+    admin.askDelete(9, 'Classic cut');
     admin.cancelDeletion();
     assert.equal(admin.deletion(), null);
     admin.confirmDelete();
     assert.deepEqual(deletions, []);
-    admin.askDelete('OpeningHours', 9, 'Monday');
+    admin.askDelete(9, 'Classic cut');
     admin.confirmDelete();
     admin.confirmDelete();
     admin.cancelDeletion();
