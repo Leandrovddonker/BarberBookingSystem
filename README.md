@@ -1,180 +1,184 @@
 # BarberBookingSystem
 
-A RESTful backend API for managing barbershop appointments, built with **C# and ASP.NET Core (.NET 8)**.
+A full-stack barbershop appointment booking application built with **ASP.NET Core (.NET 8), C#, Angular 21, and PostgreSQL**.
 
-The application allows customers to book appointments with barbers, view available time slots, and manage reservations. It includes JWT-based authentication, role-based authorization, and automated testing to ensure reliable booking functionality.
+The application allows customers to browse haircut services, check appointment availability, book appointments, and manage their reservations through a responsive web interface.
+
+Barbers can view their appointment schedules, while administrators can manage barber accounts, services, opening hours, and reservations.
+
+The project focuses on RESTful API development, authentication, role-based authorization, automated testing, and reliable reservation management.
 
 > **Project Status: Work in Progress**
 >
-> This project is still under active development. The core backend functionality is implemented, but additional features, input validation, security improvements, and a frontend application are still planned.
+> The core backend and Angular frontend are implemented. Additional validation, security improvements, and deployment are planned.
+
+## Screenshots
+
+### Appointment Booking
+![Appointment Booking](docs/screenshots/Bookingpage.png)
+
+### Customer Dashboard
+![Customer Dashboard](docs/screenshots/Customerpanel.png)
+
+### Barber Dashboard
+![Barber Dashboard](docs/screenshots/Barberpanel.png)
+
+### Admin Dashboard
+
+**Services & Opening Hours**
+
+![Admin Services and Opening Hours](docs/screenshots/adminpanel-top.png)
+
+**Team & Customer Management**
+
+![Admin Team and Customers](docs/screenshots/adminpanel-bottom.png)
 
 ## Tech Stack
 
+### Backend
 - **C# / .NET 8**
 - **ASP.NET Core Web API**
 - **Entity Framework Core**
 - **PostgreSQL**
 - **JWT Authentication**
 - **BCrypt** – Password hashing
-- **xUnit** – Automated testing
-- **SQLite In-Memory** – Integration testing
-- **Swagger / OpenAPI** – API documentation
+- **Swagger / OpenAPI**
+
+### Frontend
+- **Angular 21**
+- **TypeScript**
+- **HTML / CSS**
+- **Angular Reactive Forms**
+- **Angular Signals**
+- **RxJS**
+
+### Testing
+- **xUnit** – Backend unit and integration tests
+- **SQLite In-Memory** – Backend integration testing
+- **Angular frontend tests** – Authentication, booking, and reservation management
 
 ## Features
 
 ### Authentication & Authorization
-
 - User registration and login
 - JWT-based authentication
 - Secure password hashing using BCrypt
-- Role-based authorization for Admin, Barber, and User
-- Protected API endpoints
+- Role-based authorization for Admin, Barber, and Customer
+- Protected API endpoints and frontend routes
 
-### Reservation Management
+### Customer Features
+- Browse available barbers and haircut services
+- View available appointment slots for a selected date
+- Book appointments
+- View upcoming and previous reservations
+- Reschedule existing appointments
+- Cancel appointments
 
-- Create and manage barber appointments
-- Select a barber and haircut service
-- Retrieve available appointment slots for a selected date
-- Prevent overlapping reservations
-- Validate appointments against opening hours and service duration
-- Cancel reservations
+### Barber Features
+- View assigned appointment schedules
+- Access relevant customer and appointment details
 
-### Barber & Haircut Management
-
-- Manage barber profiles
+### Admin Features
+- View all reservations and registered customers
+- Create barber accounts
 - Manage haircut services, prices, and durations
-- Retrieve available barbers and haircut services
+- Manage barbershop opening hours
 
-### Availability Calculation
+## Architecture
 
-The reservation system dynamically calculates available appointment slots based on:
+The application follows a client-server architecture. The **Angular frontend** handles user interactions and communicates with the **ASP.NET Core REST API**, which manages authentication, authorization, business logic, and database operations through Entity Framework Core.
 
+### Appointment Availability
+
+One of the core features is the dynamic calculation of available appointment slots.
+
+Availability is determined by:
 - Barbershop opening hours
 - Selected haircut duration
 - Existing reservations
 - Selected barber and appointment date
+- 15-minute booking intervals
 
-This ensures customers can only book valid time slots without conflicting with existing appointments.
+The backend prevents overlapping reservations and validates appointments against opening hours.
 
-## Project Structure
+When rescheduling, the system excludes the customer's existing reservation from availability checks while keeping other reservations blocked.
 
-The solution separates the application from its automated tests.
-
-```text
-BarberBookingSystem/
-├── BarberBookingSystem/
-│   ├── Controllers/
-│   ├── Services/
-│   ├── Models/
-│   ├── DTOs/
-│   ├── Data/
-│   ├── Program.cs
-│   └── appsettings.json
-│
-├── BarberBookingSystem.Tests/
-│
-└── BarberBookingSystem.sln
-```
+Appointment times are stored in UTC and displayed in the **Europe/Amsterdam** time zone.
 
 ## Getting Started
 
-### Prerequisites
-
+### Requirements
 - .NET 8 SDK
+- Node.js (compatible with Angular 21)
 - PostgreSQL
-- An IDE such as JetBrains Rider or Visual Studio
 
-### 1. Clone the repository
+Configure the PostgreSQL connection string and JWT signing key using **.NET User Secrets**.
 
-```bash
-git clone https://github.com/Leandrovddonker/BarberBookingSystem.git
-cd BarberBookingSystem
-```
+### Running the Application
 
-### 2. Configure application secrets
-
-Sensitive configuration values are managed using **.NET User Secrets** rather than being stored in source control.
-
-From the API project directory, initialize User Secrets if necessary:
+**Backend** (repository root):
 
 ```bash
-cd BarberBookingSystem
-dotnet user-secrets init
+dotnet run --project BarberBookingSystem --launch-profile http
 ```
 
-Configure your PostgreSQL connection string and JWT signing key using the configuration names expected by the application. Never commit real credentials.
-
-### 3. Run the application
-
-From the solution directory:
+**Frontend:**
 
 ```bash
-dotnet run --project BarberBookingSystem
+cd frontend
+npm ci
+npm start
 ```
 
-Once running, the API can be accessed through its configured local URL. Swagger can be used to explore and test endpoints when enabled.
+The frontend runs at **http://localhost:4200** and communicates with the backend through an Angular development proxy.
 
 ## Testing
 
-The project currently includes **24 automated tests**, covering reservation functionality and authentication/authorization behavior.
+The project includes automated tests for both the backend and frontend.
 
-The test suite includes:
+### Backend Tests
 
-- Reservation service tests
-- Appointment availability validation
-- Reservation creation and cancellation scenarios
-- Controller integration tests
-- JWT authentication and authorization checks
-- HTTP status validation, including `200`, `401`, and `403`
+Unit and integration tests cover:
+- Reservation creation, cancellation, and rescheduling
+- Appointment availability and overlap prevention
+- Opening hours validation
+- Authentication and role-based authorization
+- HTTP response status validation
 
-Integration tests use an in-memory SQLite database to test application behavior without requiring a running PostgreSQL instance.
-
-Run all tests with:
+Integration tests use an in-memory SQLite database, allowing tests to run without a PostgreSQL instance.
 
 ```bash
 dotnet test
 ```
 
-## Security
+### Frontend Tests
 
-The application currently implements:
+Frontend tests cover:
+- JWT authentication and token expiration
+- Booking and rescheduling flows
+- Availability requests and error handling
+- Prevention of duplicate submissions
+- Registration and login flows
+- Admin opening hours validation
+- Time zone conversions
 
-- JWT-based authentication for protected endpoints
-- Role-based access control
-- BCrypt password hashing
-- Separation of sensitive configuration from source code
-- Authorization testing for protected routes
-
-Additional security measures and input validation are planned before the application is considered production-ready.
+```bash
+cd frontend
+npm test
+npm run build
+```
 
 ## Roadmap
 
-The following features and improvements are planned for future development.
-
-### Frontend Development
-
-- [ ] Build a user-friendly frontend application
-- [ ] Implement registration and login pages
-- [ ] Create an appointment booking interface
-- [ ] Allow customers to view and manage their reservations
-- [ ] Create management interfaces for barbers and administrators
-
-### Validation & Security
-
-- [ ] Implement password strength validation (minimum length, complexity requirements, and rejection of weak passwords such as `password`)
-- [ ] Implement email address format validation
-- [ ] Add additional security-related tests
-
-### Additional Features
-
-- [ ] Email notifications for appointment confirmations and cancellations
-- [ ] Automated CI/CD pipeline using GitHub Actions
-- [ ] Docker support for easier deployment
-- [ ] Improve API documentation
+- [ ] Improve password strength and email validation
+- [ ] Expand security-related tests
+- [ ] Add email notifications for appointment confirmations and cancellations
+- [ ] Implement CI/CD using GitHub Actions
+- [ ] Add Docker support
 - [ ] Deploy the application to a cloud environment
 
 ## Author
 
-Developed by **Leandro van den Donker** as a backend software development portfolio project.
+Developed by **Leandro van den Donker** as a full-stack software engineering portfolio project.
 
 **GitHub:** [Leandrovddonker](https://github.com/Leandrovddonker)
