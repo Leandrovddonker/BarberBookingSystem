@@ -95,11 +95,31 @@ public class ReservationController(IReservationService reservationService) : Con
     public async Task<ActionResult<List<DateTime>>> GetAvailableSlots(
         [FromQuery] int barberId,
         [FromQuery] int haircutId,
-        [FromQuery] DateOnly date)
+        [FromQuery] DateOnly date,
+        [FromQuery] int? excludeReservationId = null)
     {
-        var slots = await reservationService.GetAvailableSlotsAsync(
-            barberId, haircutId, date);
+        int? userId = null;
+        string? role = null;
+        if (excludeReservationId.HasValue)
+        {
+            if (User.Identity?.IsAuthenticated != true ||
+                !int.TryParse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value, out var authenticatedUserId))
+                return Unauthorized();
 
-        return Ok(slots);
+            role = User.FindFirst(ClaimTypes.Role)?.Value;
+            if (role != nameof(UserRole.Customer) && role != nameof(UserRole.Admin)) return Forbid();
+            userId = authenticatedUserId;
+        }
+
+        try
+        {
+            var slots = await reservationService.GetAvailableSlotsAsync(
+                barberId, haircutId, date, excludeReservationId, userId, role);
+            return Ok(slots);
+        }
+        catch (BarberBookingSystem.Exceptions.ForbiddenException)
+        {
+            return Forbid();
+        }
     }
 }

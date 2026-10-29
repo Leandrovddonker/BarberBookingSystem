@@ -879,4 +879,99 @@ public async Task CreateReservation_WhenHaircutDoesNotExist_ThrowsNotFoundExcept
         }
     }
     
+
+    [Theory]
+    [InlineData("Customer")]
+    [InlineData("Admin")]
+    public async Task EditingAvailability_ExcludesOnlyEditedReservation(string role)
+    {
+        var (context, connection) = CreateTestDatabase();
+        await using (context)
+        await using (connection)
+        {
+            var (barber, haircut, customer) = await SeedTestDataAsync(context);
+            var otherCustomer = await CreateSecondCustomerAsync(context);
+            var hours = await context.OpeningHours.SingleAsync();
+            hours.ClosingTime = new TimeSpan(11, 0, 0);
+            await context.SaveChangesAsync();
+            var date = FutureMonday();
+            DateTime Utc(int hour, int minute) => TimeZoneInfo.ConvertTimeToUtc(
+                date.ToDateTime(new TimeOnly(hour, minute)),
+                TimeZoneInfo.FindSystemTimeZoneById("Europe/Amsterdam"));
+
+            // Current appointment 09:00–09:30; another customer 10:00–10:30.
+            await AddReservationAsync(context, barber, haircut, customer, Utc(9, 0));
+            var edited = await context.Reservations.SingleAsync();
+            await AddReservationAsync(context, barber, haircut, otherCustomer, Utc(10, 0));
+            // Even another appointment belonging to this customer must still block.
+            await AddReservationAsync(context, barber, haircut, customer, Utc(10, 30));
+            var service = new ReservationService(context);
+            var actorId = role == "Admin" ? otherCustomer.Id : customer.Id;
+            var slots = await service.GetAvailableSlotsAsync(barber.Id, haircut.Id, date,
+                edited.Id, actorId, role);
+
+            Assert.Equal(new[] { Utc(9, 0), Utc(9, 15), Utc(9, 30) }, slots);
+            // Creation still considers the original appointment occupied.
+            var creationSlots = await service.GetAvailableSlotsAsync(barber.Id, haircut.Id, date);
+            Assert.Equal(new[] { Utc(9, 30) }, creationSlots);
+            Assert.Equal(3, await context.Reservations.CountAsync());
+            // Every offered edit slot is also accepted by the update validator.
+            foreach (var slot in slots)
+                await service.UpdateReservationAsync(edited.Id,
+                    new UpdateReservationDto { StartTime = slot }, actorId, role);
+        }
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("Customer")]
+    [InlineData("Barber")]
+    public async Task EditingAvailability_RejectsUnauthorizedExclusion(string? role)
+    {
+        var (context, connection) = CreateTestDatabase();
+        await using (context)
+        await using (connection)
+        {
+            var (barber, haircut, owner) = await SeedTestDataAsync(context);
+            var stranger = await CreateSecondCustomerAsync(context);
+            await AddReservationAsync(context, barber, haircut, owner, DateTime.UtcNow.AddDays(7));
+            var reservation = await context.Reservations.SingleAsync();
+            var service = new ReservationService(context);
+            await Assert.ThrowsAsync<ForbiddenException>(() => service.GetAvailableSlotsAsync(
+                barber.Id, haircut.Id, FutureMonday(), reservation.Id,
+                role == null ? null : stranger.Id, role));
+        }
+    }
+
+    [Fact]
+    public async Task EditingAvailability_EnforcesReservationIdentityAndClosedDays()
+    {
+        var (context, connection) = CreateTestDatabase();
+        await using (context)
+        await using (connection)
+        {
+            var (barber, haircut, owner) = await SeedTestDataAsync(context);
+            await AddReservationAsync(context, barber, haircut, owner, DateTime.UtcNow.AddDays(7));
+            var reservation = await context.Reservations.SingleAsync();
+            var service = new ReservationService(context);
+            await Assert.ThrowsAsync<NotFoundException>(() => service.GetAvailableSlotsAsync(
+                barber.Id, haircut.Id, FutureMonday(), -1, owner.Id, "Customer"));
+            await Assert.ThrowsAsync<BadRequestException>(() => service.GetAvailableSlotsAsync(
+                barber.Id + 1, haircut.Id, FutureMonday(), reservation.Id, owner.Id, "Customer"));
+            await Assert.ThrowsAsync<BadRequestException>(() => service.GetAvailableSlotsAsync(
+                barber.Id, haircut.Id + 1, FutureMonday(), reservation.Id, owner.Id, "Customer"));
+            Assert.Empty(await service.GetAvailableSlotsAsync(barber.Id, haircut.Id,
+                FutureMonday().AddDays(1), reservation.Id, owner.Id, "Customer"));
+            // Excluding an appointment never makes past slots bookable.
+            Assert.Empty(await service.GetAvailableSlotsAsync(barber.Id, haircut.Id,
+                FutureMonday().AddDays(-14), reservation.Id, owner.Id, "Customer"));
+        }
+    }
+
+    private static DateOnly FutureMonday()
+    {
+        var date = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(7));
+        while (date.DayOfWeek != DayOfWeek.Monday) date = date.AddDays(1);
+        return date;
+    }
 }

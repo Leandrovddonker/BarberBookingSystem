@@ -150,4 +150,14 @@ public class ReservationControllerTests
         // Assert
         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
     }
+
+    [Fact]
+    public async Task EditingAvailability_WithoutToken_ReturnsUnauthorized()
+    {
+        await using var factory = new WebApplicationFactory<Program>();
+        using var client = factory.CreateClient();
+        var response = await client.GetAsync(
+            "/api/Reservation/available-slots?barberId=1&haircutId=1&date=2030-01-07&excludeReservationId=1");
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+    }
 }
