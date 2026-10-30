@@ -79,10 +79,13 @@ The project focuses on RESTful API development, authentication, role-based autho
 - Access relevant customer and appointment details
 
 ### Admin Features
+
 - View all reservations and registered customers
 - Create barber accounts
 - Manage haircut services, prices, and durations
-- Manage barbershop opening hours
+- Manage regular weekly opening hours
+- Configure special opening hours for holidays, temporary closures, and date-specific schedule changes
+- Receive warnings when changing opening hours on dates with existing reservations
 
 ## Architecture
 
@@ -93,13 +96,17 @@ The application follows a client-server architecture. The **Angular frontend** h
 One of the core features is the dynamic calculation of available appointment slots.
 
 Availability is determined by:
-- Barbershop opening hours
+
+- Regular weekly opening hours
+- Special opening hours for specific dates, including holidays and closures
 - Selected haircut duration
 - Existing reservations
 - Selected barber and appointment date
 - 15-minute booking intervals
 
-The backend prevents overlapping reservations and validates appointments against opening hours.
+Special opening hours override the regular weekly schedule, allowing administrators to close the barbershop or configure different opening times for individual dates.
+
+The backend prevents overlapping reservations and validates appointments against both regular and special opening hours. Existing reservations remain unchanged when special opening hours are modified.
 
 When rescheduling, the system excludes the customer's existing reservation from availability checks while keeping other reservations blocked.
 
@@ -141,7 +148,7 @@ The project includes automated tests for both the backend and frontend.
 Unit and integration tests cover:
 - Reservation creation, cancellation, and rescheduling
 - Appointment availability and overlap prevention
-- Opening hours validation
+- Regular and special opening hours validation
 - Authentication and role-based authorization
 - HTTP response status validation
 
@@ -159,7 +166,7 @@ Frontend tests cover:
 - Availability requests and error handling
 - Prevention of duplicate submissions
 - Registration and login flows
-- Admin opening hours validation
+- Admin management and validation of regular and special opening hours
 - Time zone conversions
 
 ```bash
