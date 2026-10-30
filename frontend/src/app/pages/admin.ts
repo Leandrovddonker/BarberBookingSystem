@@ -3,6 +3,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { Observable, forkJoin } from 'rxjs';
+import { SpecialOpeningHoursComponent } from './special-opening-hours';
 import { Modal } from '../shared/modal';
 import { Api } from '../core/api';
 import {
@@ -20,7 +21,12 @@ interface PendingDeletion {
 }
 
 @Component({
-  imports: [ReactiveFormsModule, RouterLink, Modal],
+  imports: [
+    ReactiveFormsModule,
+    RouterLink,
+    Modal,
+    SpecialOpeningHoursComponent,
+  ],
   templateUrl: './admin.html',
   styleUrl: './admin.css',
 })

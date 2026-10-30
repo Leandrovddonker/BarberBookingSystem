@@ -14,6 +14,9 @@ import {
   CreateReservationDto,
   UpdateReservationDto,
   LoginResponseDto,
+  SpecialOpeningHours,
+  CreateSpecialOpeningHoursDto,
+  UpdateSpecialOpeningHoursDto,
 } from './models';
 
 @Injectable({ providedIn: 'root' })
@@ -123,5 +126,29 @@ export class Api {
 
   deleteHours(id: number) {
     return this.delete(`OpeningHours/${id}`);
+  }
+
+  specialHours() {
+    return this.get<SpecialOpeningHours[]>('SpecialOpeningHours');
+  }
+
+  specialHoursById(id: number) {
+    return this.get<SpecialOpeningHours>(`SpecialOpeningHours/${id}`);
+  }
+
+  createSpecialHours(hours: CreateSpecialOpeningHoursDto) {
+    return this.post<SpecialOpeningHours>('SpecialOpeningHours', hours);
+  }
+
+  updateSpecialHours(id: number, hours: UpdateSpecialOpeningHoursDto) {
+    return this.put<SpecialOpeningHours>(`SpecialOpeningHours/${id}`, hours);
+  }
+
+  deleteSpecialHours(id: number) {
+    return this.delete(`SpecialOpeningHours/${id}`);
+  }
+
+  specialHoursReservationCount(date: string) {
+    return this.get<number>('SpecialOpeningHours/reservation-count', { date });
   }
 }

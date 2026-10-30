@@ -1,0 +1,16 @@
+.closed-day-control {
+  flex-direction: row;
+  align-items: center;
+}
+
+.closed-day-control input {
+  width: auto;
+  min-height: auto;
+  margin: 0;
+}
+
+.opening-hours-column {
+  display: grid;
+  gap: 25px;
+  min-width: 0;
+}

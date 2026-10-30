@@ -79,59 +79,64 @@
         }
       </form>
     </section>
-    <section class="panel">
-      <h2>Opening hours</h2>
-      <p class="muted">Shop hours in Europe/Amsterdam.</p>
-      @for (weekday of weekdays(); track weekday.day) {
-        <div class="admin-row">
-          <div>
-            <strong>{{ days[weekday.day] }}</strong>
-            <p>{{ weekday.record ? hoursLabel(weekday.record) : 'Closed' }}</p>
+    <div class="opening-hours-column">
+      <section class="panel">
+        <h2>Opening hours</h2>
+        <p class="muted">Shop hours in Europe/Amsterdam.</p>
+        @for (weekday of weekdays(); track weekday.day) {
+          <div class="admin-row">
+            <div>
+              <strong>{{ days[weekday.day] }}</strong>
+              <p>
+                {{ weekday.record ? hoursLabel(weekday.record) : 'Closed' }}
+              </p>
+            </div>
+            <button
+              class="text-button"
+              [disabled]="busy() || loading()"
+              (click)="editHours(weekday.day)"
+            >
+              Edit
+            </button>
           </div>
-          <button
-            class="text-button"
-            [disabled]="busy() || loading()"
-            (click)="editHours(weekday.day)"
-          >
-            Edit
-          </button>
-        </div>
-      }
-      @if (editingDay() !== null) {
-        <h3>Edit {{ days[editingDay()!] }}</h3>
-        <form [formGroup]="hoursForm" (ngSubmit)="saveHours()">
-          <label class="closed-day-control">
-            <input
-              type="checkbox"
-              formControlName="closed"
-              (change)="toggleClosed()"
-            />
-            Closed
-          </label>
-          <div class="form-row">
-            <label>
-              Opens
-              <input type="time" formControlName="openingTime" required />
+        }
+        @if (editingDay() !== null) {
+          <h3>Edit {{ days[editingDay()!] }}</h3>
+          <form [formGroup]="hoursForm" (ngSubmit)="saveHours()">
+            <label class="closed-day-control">
+              <input
+                type="checkbox"
+                formControlName="closed"
+                (change)="toggleClosed()"
+              />
+              Closed
             </label>
-            <label>
-              Closes
-              <input type="time" formControlName="closingTime" required />
-            </label>
-          </div>
-          <button class="button" [disabled]="busy() || hoursForm.invalid">
-            Save hours
-          </button>
-          <button
-            class="text-button"
-            type="button"
-            [disabled]="busy()"
-            (click)="resetHours()"
-          >
-            Cancel edit
-          </button>
-        </form>
-      }
-    </section>
+            <div class="form-row">
+              <label>
+                Opens
+                <input type="time" formControlName="openingTime" required />
+              </label>
+              <label>
+                Closes
+                <input type="time" formControlName="closingTime" required />
+              </label>
+            </div>
+            <button class="button" [disabled]="busy() || hoursForm.invalid">
+              Save hours
+            </button>
+            <button
+              class="text-button"
+              type="button"
+              [disabled]="busy()"
+              (click)="resetHours()"
+            >
+              Cancel edit
+            </button>
+          </form>
+        }
+      </section>
+      <app-special-opening-hours />
+    </div>
     <section class="panel">
       <h2>The team</h2>
       @for (barber of barbers(); track barber.id) {

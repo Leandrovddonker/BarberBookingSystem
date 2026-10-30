@@ -82,6 +82,9 @@ export class Dashboard {
   userName(id: number): string {
     return this.users.find((user) => user.id === id)?.name || `Customer #${id}`;
   }
+  userMail(id: number): string{
+    return this.users.find((user) => user.id === id)?.email || `Customer #${id}`;
+  }
 
   load(): void {
     this.loading.set(true);
