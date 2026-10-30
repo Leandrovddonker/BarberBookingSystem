@@ -35,7 +35,7 @@ public class OpeningHoursController(IOpeningHoursService openingHoursService) : 
     }
 
     [Authorize(Roles = "Admin")]
-    [HttpDelete("{id}")]
+    [HttpDelete("{id:int}")]
     public async Task<IActionResult> DeleteOpeningHoursByIdAsync(int id)
     {
         await openingHoursService.DeleteOpeningHoursByIdAsync(id);

@@ -129,9 +129,7 @@ public class ReservationService(BarberSystemDbContext context) : IReservationSer
             if (reservation.BarberId != barberId || reservation.HaircutId != haircutId)
                 throw new BadRequestException("Availability must use the reservation's barber and haircut.");
         }
-
-        var openingHours = await context.OpeningHours
-            .FirstOrDefaultAsync(h => h.Day == date.DayOfWeek);
+        
         var haircut = await context.HairCuts.FirstOrDefaultAsync(h => h.Id == haircutId);
         var barberExists = await context.Barbers.FirstOrDefaultAsync(b => b.Id == barberId);
         if (barberExists == null)
@@ -142,21 +140,41 @@ public class ReservationService(BarberSystemDbContext context) : IReservationSer
         {
             throw new NotFoundException("Haircut not found.");
         }
-        if (openingHours == null || openingHours.OpeningTime >= openingHours.ClosingTime)
-        {
-            return [];
-        }
-        return await GenerateAvailableSlotsAsync(barberId,haircut.DurationMinutes, date, openingHours, excludeReservationId);
+        
+        var openingHours = await GetEffectiveOpeningHoursAsync(date);
+        if (openingHours == null) return new List<DateTime>();
+      
+        return await GenerateAvailableSlotsAsync(barberId,haircut.DurationMinutes, date, openingHours.Value, excludeReservationId);
     }
 
+    private async Task<(TimeOnly OpeningTime, TimeOnly ClosingTime)?> GetEffectiveOpeningHoursAsync(DateOnly date)
+    {
+        var specialHours = await context.SpecialOpeningHours.FirstOrDefaultAsync(h => h.Date == date);
+
+        if (specialHours != null)
+        {
+            if (specialHours?.IsClosed == true) return null;
+            if (specialHours.OpeningTime == null || specialHours.ClosingTime == null) return null;
+            
+            return (specialHours.OpeningTime.Value, specialHours.ClosingTime.Value);
+        }
+        
+        var openingHours = await context.OpeningHours
+            .FirstOrDefaultAsync(h => h.Day == date.DayOfWeek);
+        
+       if (openingHours == null) return null;
+       if (openingHours.OpeningTime >= openingHours.ClosingTime) return null;
+        
+        return (openingHours.OpeningTime, openingHours.ClosingTime);
+
+    }
+    
     private async Task<List<DateTime>> GenerateAvailableSlotsAsync(
-        int barberId, int durationMinutes, DateOnly date, OpeningHours openingHours, int? excludeReservationId)
+        int barberId, int durationMinutes, DateOnly date, (TimeOnly OpeningTime, TimeOnly ClosingTime) openingHours, int? excludeReservationId)
     {
         var availableSlots = new List<DateTime>();
-        var currentTime = date.ToDateTime(
-            TimeOnly.FromTimeSpan(openingHours.OpeningTime));
-        var closingTime = date.ToDateTime(
-            TimeOnly.FromTimeSpan(openingHours.ClosingTime));
+        var currentTime = date.ToDateTime(openingHours.OpeningTime);
+        var closingTime = date.ToDateTime(openingHours.ClosingTime);
         
         const int slotIntervalMinutes = 15;
         var dutchTimeZone = TimeZoneInfo.FindSystemTimeZoneById("Europe/Amsterdam");
@@ -259,27 +277,25 @@ public class ReservationService(BarberSystemDbContext context) : IReservationSer
     private async Task<bool> IsWithinOpeningHoursAsync(DateTime newResStart, DateTime newResEnd)
     {
         var dutchTimeZone = TimeZoneInfo.FindSystemTimeZoneById("Europe/Amsterdam");
+
         var localStart = TimeZoneInfo.ConvertTimeFromUtc(newResStart, dutchTimeZone);
         var localEnd = TimeZoneInfo.ConvertTimeFromUtc(newResEnd, dutchTimeZone);
-        
-        var dayOfWeek = localStart.DayOfWeek;
-        var openingHours = await context.OpeningHours.FirstOrDefaultAsync(h => h.Day == dayOfWeek);
+
+        if (localStart.Date != localEnd.Date)
+            return false;
+
+        var date = DateOnly.FromDateTime(localStart);
+
+        var openingHours = await GetEffectiveOpeningHoursAsync(date);
+
         if (openingHours == null)
-        {
             return false;
-        }
 
-        var reservationStart = localStart.TimeOfDay;
-        var reservationEnd = localEnd.TimeOfDay;
-        
-        var openingTime = openingHours.OpeningTime;
-        var closingTime = openingHours.ClosingTime;
+        var reservationStart = TimeOnly.FromDateTime(localStart);
+        var reservationEnd = TimeOnly.FromDateTime(localEnd);
 
-        if (reservationStart < openingTime || reservationEnd > closingTime || localStart.Date != localEnd.Date)
-        {
-            return false;
-        }
-        return true;
+        return reservationStart >= openingHours.Value.OpeningTime &&
+               reservationEnd <= openingHours.Value.ClosingTime;
     }
     
     private async Task<bool> HasOverLappingReservationAsync(int barberId, DateTime newResStart, 

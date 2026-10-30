@@ -39,7 +39,7 @@ public class ReservationController(IReservationService reservationService) : Con
     }
 
     [Authorize(Roles = "Admin,Customer")]
-    [HttpPut("{reservationId}")]
+    [HttpPut("{reservationId:int}")]
     public async Task<IActionResult> UpdateReservation(int reservationId, UpdateReservationDto reservationDto)
     {
         var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;

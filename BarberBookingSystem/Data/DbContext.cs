@@ -9,6 +9,7 @@ public class BarberSystemDbContext(DbContextOptions<BarberSystemDbContext> optio
     public DbSet<User> Users { get; set; }
     public DbSet<Barber> Barbers { get; set; }
     public DbSet<OpeningHours> OpeningHours { get; set; }
+    public DbSet<SpecialOpeningHours> SpecialOpeningHours { get; set; }
     public DbSet<HairCut> HairCuts { get; set; }
 
 
@@ -43,6 +44,10 @@ public class BarberSystemDbContext(DbContextOptions<BarberSystemDbContext> optio
             .HasOne(b => b.User)
             .WithOne(u => u.Barber)
             .HasForeignKey<Barber>(b => b.UserId);
+
+        modelBuilder.Entity<SpecialOpeningHours>()
+            .HasIndex(s => s.Date)
+            .IsUnique();
 
         modelBuilder.Entity<User>();
     }

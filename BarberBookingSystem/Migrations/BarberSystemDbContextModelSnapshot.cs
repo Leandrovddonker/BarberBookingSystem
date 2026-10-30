@@ -79,14 +79,14 @@ namespace BarberBookingSystem.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<TimeSpan>("ClosingTime")
-                        .HasColumnType("interval");
+                    b.Property<TimeOnly>("ClosingTime")
+                        .HasColumnType("time without time zone");
 
                     b.Property<int>("Day")
                         .HasColumnType("integer");
 
-                    b.Property<TimeSpan>("OpeningTime")
-                        .HasColumnType("interval");
+                    b.Property<TimeOnly>("OpeningTime")
+                        .HasColumnType("time without time zone");
 
                     b.HasKey("Id");
 
@@ -122,6 +122,34 @@ namespace BarberBookingSystem.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("reservations");
+                });
+
+            modelBuilder.Entity("BarberBookingSystem.Models.SpecialOpeningHours", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<TimeOnly?>("ClosingTime")
+                        .HasColumnType("time without time zone");
+
+                    b.Property<DateOnly>("Date")
+                        .HasColumnType("date");
+
+                    b.Property<bool>("IsClosed")
+                        .HasColumnType("boolean");
+
+                    b.Property<TimeOnly?>("OpeningTime")
+                        .HasColumnType("time without time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Date")
+                        .IsUnique();
+
+                    b.ToTable("specialopeninghours");
                 });
 
             modelBuilder.Entity("BarberBookingSystem.Models.User", b =>
