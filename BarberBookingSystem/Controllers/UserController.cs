@@ -9,7 +9,7 @@ namespace BarberBookingSystem.Controllers;
 public class UserController(IUserService userService) : ControllerBase
 {
     [Authorize]
-    [HttpGet("{id}")]
+    [HttpGet("{id:int}")]
     public async Task<IActionResult> GetUserByIdAsync(int id)
     {
         var user = await userService.GetUserByIdAsync(id);

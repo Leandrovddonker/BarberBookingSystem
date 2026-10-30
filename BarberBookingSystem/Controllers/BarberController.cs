@@ -17,7 +17,7 @@ public class BarberController(IBarberService barberService) : ControllerBase
     }
 
 
-    [HttpGet("{id}")]
+    [HttpGet("{id:int}")]
     public async Task<IActionResult> GetBarberByIdAsync(int id)
     {
         var barber = await barberService.GetBarberByIdAsync(id);

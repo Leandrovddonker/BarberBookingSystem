@@ -19,7 +19,7 @@ public class CutController(ICutService hairCutService) : ControllerBase
         return Ok(haircuts);
     }
 
-    [HttpGet("{id}")]
+    [HttpGet("{id:int}")]
     public async Task<IActionResult> GetByIdAsync(int id)
     {
         var haircut = await hairCutService.GetHairCutByIdAsync(id);
@@ -35,7 +35,7 @@ public class CutController(ICutService hairCutService) : ControllerBase
     }
 
     [Authorize(Roles = "Admin")]
-    [HttpPut("{id}")]
+    [HttpPut("{id:int}")]
     public async Task<IActionResult> EditHairCutAsync([FromBody] HairCutDto hairCut, int id)
     {
         var editHaircut = await hairCutService.UpdateHairCutByIdAsync(id ,hairCut);
@@ -43,7 +43,7 @@ public class CutController(ICutService hairCutService) : ControllerBase
     }
 
     [Authorize(Roles = "Admin")]
-    [HttpDelete("{id}")]
+    [HttpDelete("{id:int}")]
     public async Task<IActionResult> DeleteHairCutAsync(int id)
     {
         await hairCutService.DeleteHairCutByIdAsync(id);

@@ -65,8 +65,8 @@ public class ReservationServiceTests
             context.OpeningHours.Add(new OpeningHours
             {
                 Day = DayOfWeek.Monday,
-                OpeningTime = new TimeSpan(9, 0, 0),
-                ClosingTime = new TimeSpan(10, 0, 0)
+                OpeningTime = new TimeOnly(9, 0, 0),
+                ClosingTime = new TimeOnly(10, 0, 0)
             });
         }
 
@@ -892,7 +892,7 @@ public async Task CreateReservation_WhenHaircutDoesNotExist_ThrowsNotFoundExcept
             var (barber, haircut, customer) = await SeedTestDataAsync(context);
             var otherCustomer = await CreateSecondCustomerAsync(context);
             var hours = await context.OpeningHours.SingleAsync();
-            hours.ClosingTime = new TimeSpan(11, 0, 0);
+            hours.ClosingTime = new TimeOnly(11, 0, 0);
             await context.SaveChangesAsync();
             var date = FutureMonday();
             DateTime Utc(int hour, int minute) => TimeZoneInfo.ConvertTimeToUtc(

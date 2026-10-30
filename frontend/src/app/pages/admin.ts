@@ -1,8 +1,9 @@
-import { Component, DestroyRef, inject, signal } from '@angular/core';
+import { Component, DestroyRef, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { Observable, forkJoin } from 'rxjs';
+import { SpecialOpeningHoursComponent } from './special-opening-hours';
 import { Modal } from '../shared/modal';
 import { Api } from '../core/api';
 import {
@@ -14,22 +15,25 @@ import {
 } from '../core/models';
 import { days, errorMessage, openingHoursLabel } from '../core/display';
 
-type ManagedResource = 'Cut' | 'OpeningHours';
 interface PendingDeletion {
-  resource: ManagedResource;
   id: number;
   label: string;
 }
 
 @Component({
-  imports: [ReactiveFormsModule, RouterLink, Modal],
+  imports: [
+    ReactiveFormsModule,
+    RouterLink,
+    Modal,
+    SpecialOpeningHoursComponent,
+  ],
   templateUrl: './admin.html',
+  styleUrl: './admin.css',
 })
 export class Admin {
   private readonly api = inject(Api);
   private readonly formBuilder = inject(FormBuilder);
   private readonly destroyRef = inject(DestroyRef);
-  private originalDay = 0;
 
   readonly days = days;
   readonly roles = ['Customer', 'Barber', 'Admin'];
@@ -43,7 +47,13 @@ export class Admin {
   readonly busy = signal(false);
   readonly loading = signal(false);
   readonly cutId = signal<number | null>(null);
-  readonly hourId = signal<number | null>(null);
+  readonly editingDay = signal<number | null>(null);
+  readonly weekdays = computed(() =>
+    [1, 2, 3, 4, 5, 6, 0].map((day) => ({
+      day,
+      record: this.hours().find((hours) => hours.day === day),
+    })),
+  );
   readonly deletion = signal<PendingDeletion | null>(null);
 
   readonly cutForm = this.formBuilder.nonNullable.group({
@@ -55,7 +65,7 @@ export class Admin {
     ],
   });
   readonly hoursForm = this.formBuilder.nonNullable.group({
-    day: [1, Validators.required],
+    closed: [false],
     openingTime: ['09:00', Validators.required],
     closingTime: ['18:00', Validators.required],
   });
@@ -120,52 +130,59 @@ export class Admin {
     this.runMutation(request, 'Service saved.', () => this.resetCut());
   }
 
-  editHours(hours: OpeningHours): void {
-    this.hourId.set(hours.id);
-    this.originalDay = hours.day;
+  editHours(day: number): void {
+    if (this.busy()) return;
+    const record = this.hours().find((hours) => hours.day === day);
+    this.editingDay.set(day);
+    this.error.set('');
     this.hoursForm.setValue({
-      day: hours.day,
-      openingTime: hours.openingTime.slice(0, 5),
-      closingTime: hours.closingTime.slice(0, 5),
+      closed: !record || record.openingTime >= record.closingTime,
+      openingTime: record?.openingTime.slice(0, 5) ?? '09:00',
+      closingTime: record?.closingTime.slice(0, 5) ?? '18:00',
     });
-    this.hoursForm.controls.day.disable();
+    this.toggleClosed();
+  }
+
+  toggleClosed(): void {
+    const { openingTime, closingTime } = this.hoursForm.controls;
+    if (this.hoursForm.controls.closed.value) {
+      openingTime.disable();
+      closingTime.disable();
+    } else {
+      openingTime.enable();
+      closingTime.enable();
+    }
   }
 
   resetHours(): void {
-    this.hourId.set(null);
-    this.hoursForm.controls.day.enable();
+    this.editingDay.set(null);
     this.hoursForm.reset({
-      day: 1,
+      closed: false,
       openingTime: '09:00',
       closingTime: '18:00',
     });
+    this.toggleClosed();
   }
 
   saveHours(): void {
-    if (this.hoursForm.invalid) return;
+    const day = this.editingDay();
+    if (day === null || this.busy() || this.hoursForm.invalid) return;
     const hours = this.hoursForm.getRawValue();
-    if (
-      !this.hourId() &&
-      this.hours().some((existing) => existing.day === hours.day)
-    ) {
+    if (!hours.closed && hours.closingTime <= hours.openingTime) {
       this.error.set(
-        'This day already has opening hours. Edit the existing entry.',
+        'Closing time must be after opening time. Mark the day as closed if the shop is not open.',
       );
       return;
     }
-    if (hours.closingTime < hours.openingTime) {
-      this.error.set(
-        'Closing time must be after opening time, or equal for a closed day.',
-      );
-      return;
-    }
+    // Equal times represent a closed day in the existing backend contract.
     const body: OpeningHoursDto = {
-      day: hours.day,
-      openingTime: hours.openingTime + ':00',
-      closingTime: hours.closingTime + ':00',
+      day,
+      openingTime: hours.closed ? '00:00:00' : hours.openingTime + ':00',
+      closingTime: hours.closed ? '00:00:00' : hours.closingTime + ':00',
     };
-    const request = this.hourId()
-      ? this.api.updateHours(this.originalDay, body)
+    const exists = this.hours().some((record) => record.day === day);
+    const request = exists
+      ? this.api.updateHours(day, body)
       : this.api.createHours(body);
     this.runMutation(request, 'Opening hours saved.', () => this.resetHours());
   }
@@ -179,9 +196,9 @@ export class Admin {
     );
   }
 
-  askDelete(resource: ManagedResource, id: number, label: string): void {
+  askDelete(id: number, label: string): void {
     this.error.set('');
-    this.deletion.set({ resource, id, label });
+    this.deletion.set({ id, label });
   }
 
   cancelDeletion(): void {
@@ -194,10 +211,7 @@ export class Admin {
     if (this.busy()) return;
     const deletion = this.deletion();
     if (!deletion) return;
-    const request =
-      deletion.resource === 'Cut'
-        ? this.api.deleteCut(deletion.id)
-        : this.api.deleteHours(deletion.id);
+    const request = this.api.deleteCut(deletion.id);
     this.runMutation(request, 'Item deleted.', () => {
       this.deletion.set(null);
       this.resetCut();

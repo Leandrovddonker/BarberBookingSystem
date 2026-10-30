@@ -1,0 +1,249 @@
+<section class="panel">
+  <h2 #sectionHeading tabindex="-1">Special Opening Hours</h2>
+  <p class="muted">
+    Date-specific hours for holidays, vacations, and other exceptions. All times
+    are local to the shop.
+  </p>
+  @if (loading()) {
+    <p role="status">Loading special opening hours…</p>
+  }
+  @if (listError()) {
+    <p class="error" role="alert">
+      {{ listError() }}
+      <button
+        type="button"
+        class="text-button"
+        [disabled]="busy() || loading()"
+        (click)="load()"
+      >
+        Try again
+      </button>
+    </p>
+  }
+  @if (message()) {
+    <p class="success" role="status">{{ message() }}</p>
+  }
+  <div
+    class="scrollable-list"
+    role="region"
+    aria-label="Configured special opening hours"
+    tabindex="0"
+  >
+    @for (exception of sortedExceptions(); track exception.id) {
+      <div class="admin-row">
+        <div>
+          <strong>{{ formatDate(exception.date) }}</strong>
+          <p>
+            {{
+              exception.isClosed
+                ? 'Closed'
+                : exception.openingTime?.slice(0, 5) +
+                  ' – ' +
+                  exception.closingTime?.slice(0, 5)
+            }}
+          </p>
+        </div>
+        <div class="actions">
+          <button
+            type="button"
+            class="text-button"
+            [disabled]="busy() || loading() || isPast(exception.date)"
+            (click)="edit(exception)"
+          >
+            Edit
+          </button>
+          <button
+            type="button"
+            class="text-button danger"
+            [disabled]="busy() || loading()"
+            (click)="askDelete(exception)"
+          >
+            Delete
+          </button>
+        </div>
+      </div>
+    } @empty {
+      @if (!loading() && !listError()) {
+        <p class="muted">
+          No special opening hours yet. Add an exception for a holiday or a
+          different schedule.
+        </p>
+      }
+    }
+  </div>
+  <button
+    type="button"
+    class="button add-button"
+    [disabled]="busy() || loading() || !!listError()"
+    (click)="add()"
+  >
+    Add special opening hours
+  </button>
+</section>
+
+@if (dialogOpen()) {
+  <app-modal
+    [title]="dialogTitle()"
+    [busy]="busy()"
+    [fallbackFocus]="sectionHeading"
+    (dismissed)="closeDialog()"
+  >
+    @if (pendingAction(); as action) {
+      <p>{{ formatDate(action.date) }}</p>
+      <p>
+        There are {{ reservationCount() }} existing appointments on this date.
+        {{
+          action.kind === 'delete'
+            ? 'Restoring regular opening hours'
+            : 'Changing the opening hours'
+        }}
+        will prevent bookings outside the resulting hours, but existing
+        appointments will remain unchanged. Do you want to continue?
+      </p>
+      @if (formError()) {
+        <p class="error" role="alert">{{ formError() }}</p>
+      }
+      <div class="actions">
+        <button
+          type="button"
+          class="text-button"
+          [disabled]="busy()"
+          (click)="cancelConfirmation()"
+        >
+          Cancel
+        </button>
+        <button
+          type="button"
+          class="button"
+          [disabled]="busy()"
+          (click)="confirmAction()"
+        >
+          {{
+            busy()
+              ? 'Saving…'
+              : action.kind === 'delete'
+                ? 'Delete anyway'
+                : 'Save anyway'
+          }}
+        </button>
+      </div>
+    } @else if (deletion(); as exception) {
+      <p>
+        Delete the exception for {{ formatDate(exception.date) }}? Regular
+        weekly hours will apply again.
+      </p>
+      @if (formError()) {
+        <p class="error" role="alert">{{ formError() }}</p>
+      }
+      @if (operation() === 'checking') {
+        <p role="status">Checking existing appointments…</p>
+      }
+      <div class="actions">
+        <button
+          type="button"
+          class="text-button"
+          [disabled]="busy()"
+          (click)="closeDialog()"
+        >
+          Cancel
+        </button>
+        <button
+          type="button"
+          class="button"
+          [disabled]="busy()"
+          (click)="deleteException()"
+        >
+          {{ busy() ? 'Please wait…' : 'Delete' }}
+        </button>
+      </div>
+    } @else if (editor()) {
+      <form [formGroup]="form" (ngSubmit)="save()">
+        <fieldset [disabled]="busy()">
+          <label>
+            Date
+            <input
+              type="date"
+              formControlName="date"
+              [min]="today()"
+              required
+            />
+          </label>
+          @if (editor()?.id !== null) {
+            <p class="muted">
+              The date of an existing exception cannot be changed.
+            </p>
+          }
+          <label class="closed-control">
+            <input
+              type="checkbox"
+              formControlName="isClosed"
+              (change)="toggleClosed()"
+            />
+            Closed
+          </label>
+          <div class="form-row">
+            <label>
+              Opens
+              <input
+                type="time"
+                [step]="form.controls.isClosed.value ? 60 : 1"
+                formControlName="openingTime"
+              />
+            </label>
+            <label>
+              Closes
+              <input
+                type="time"
+                [step]="form.controls.isClosed.value ? 60 : 1"
+                formControlName="closingTime"
+              />
+            </label>
+          </div>
+        </fieldset>
+        @if (formError()) {
+          <p class="error" role="alert">{{ formError() }}</p>
+        }
+        @if (operation() === 'checking') {
+          <p role="status">Checking existing appointments…</p>
+        }
+        <div class="actions">
+          <button
+            type="button"
+            class="text-button"
+            [disabled]="busy()"
+            (click)="closeDialog()"
+          >
+            Cancel
+          </button>
+          <button type="submit" class="button" [disabled]="busy()">
+            {{ busy() ? 'Please wait…' : 'Save' }}
+          </button>
+        </div>
+      </form>
+    }
+  </app-modal>
+}
+<style>
+    :host {
+        display: block;
+        min-width: 0;
+    }
+    fieldset {
+        border: 0;
+        padding: 0;
+        margin: 0;
+        min-width: 0;
+    }
+    .closed-control {
+        flex-direction: row;
+        align-items: center;
+    }
+    .closed-control input {
+        width: auto;
+        min-height: auto;
+        margin: 0;
+    }
+    .add-button {
+        margin-top: 24px;
+    }
+</style>

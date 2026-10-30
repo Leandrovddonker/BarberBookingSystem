@@ -34,7 +34,7 @@
             <button
               class="text-button danger"
               [disabled]="busy()"
-              (click)="askDelete('Cut', cut.id, cut.cut)"
+              (click)="askDelete(cut.id, cut.cut)"
             >
               Delete
             </button>
@@ -79,61 +79,64 @@
         }
       </form>
     </section>
-    <section class="panel">
-      <h2>Opening hours</h2>
-      <p class="muted">
-        Amsterdam time. Equal opening and closing times mark a closed day.
-      </p>
-      @for (hours of hours(); track hours.id) {
-        <div class="admin-row">
-          <div>
-            <strong>{{ days[hours.day] }}</strong>
-            <p>
-              {{ hoursLabel(hours) }}
-            </p>
-          </div>
-          <div class="actions">
-            <button class="text-button" (click)="editHours(hours)">Edit</button>
+    <div class="opening-hours-column">
+      <section class="panel">
+        <h2>Opening hours</h2>
+        <p class="muted">Shop hours in Europe/Amsterdam.</p>
+        @for (weekday of weekdays(); track weekday.day) {
+          <div class="admin-row">
+            <div>
+              <strong>{{ days[weekday.day] }}</strong>
+              <p>
+                {{ weekday.record ? hoursLabel(weekday.record) : 'Closed' }}
+              </p>
+            </div>
             <button
-              class="text-button danger"
-              [disabled]="busy()"
-              (click)="askDelete('OpeningHours', hours.id, days[hours.day])"
+              class="text-button"
+              [disabled]="busy() || loading()"
+              (click)="editHours(weekday.day)"
             >
-              Delete
+              Edit
             </button>
           </div>
-        </div>
-      }
-      <h3>{{ hourId() ? 'Edit opening hours' : 'Add opening hours' }}</h3>
-      <form [formGroup]="hoursForm" (ngSubmit)="saveHours()">
-        <label>
-          Day
-          <select formControlName="day">
-            @for (day of days; track day; let dayIndex = $index) {
-              <option [ngValue]="dayIndex">{{ day }}</option>
-            }
-          </select>
-        </label>
-        <div class="form-row">
-          <label>
-            Opens
-            <input type="time" formControlName="openingTime" required />
-          </label>
-          <label>
-            Closes
-            <input type="time" formControlName="closingTime" required />
-          </label>
-        </div>
-        <button class="button" [disabled]="busy() || hoursForm.invalid">
-          Save hours
-        </button>
-        @if (hourId()) {
-          <button class="text-button" type="button" (click)="resetHours()">
-            Cancel edit
-          </button>
         }
-      </form>
-    </section>
+        @if (editingDay() !== null) {
+          <h3>Edit {{ days[editingDay()!] }}</h3>
+          <form [formGroup]="hoursForm" (ngSubmit)="saveHours()">
+            <label class="closed-day-control">
+              <input
+                type="checkbox"
+                formControlName="closed"
+                (change)="toggleClosed()"
+              />
+              Closed
+            </label>
+            <div class="form-row">
+              <label>
+                Opens
+                <input type="time" formControlName="openingTime" required />
+              </label>
+              <label>
+                Closes
+                <input type="time" formControlName="closingTime" required />
+              </label>
+            </div>
+            <button class="button" [disabled]="busy() || hoursForm.invalid">
+              Save hours
+            </button>
+            <button
+              class="text-button"
+              type="button"
+              [disabled]="busy()"
+              (click)="resetHours()"
+            >
+              Cancel edit
+            </button>
+          </form>
+        }
+      </section>
+      <app-special-opening-hours />
+    </div>
     <section class="panel">
       <h2>The team</h2>
       @for (barber of barbers(); track barber.id) {
@@ -216,13 +219,7 @@
       [fallbackFocus]="adminHeading"
       (dismissed)="cancelDeletion()"
     >
-      <p>
-        {{
-          pendingDeletion.resource === 'OpeningHours'
-            ? 'This removes these opening hours from the shop.'
-            : 'This removes the service from the shop.'
-        }}
-      </p>
+      <p>This removes the service from the shop.</p>
       @if (error()) {
         <p class="error" role="alert">{{ error() }}</p>
       }

@@ -68,3 +68,15 @@ export interface UpdateReservationDto {
 export interface CreateBarberDto extends RegisterDto {
   description: string;
 }
+
+export interface UpdateSpecialOpeningHoursDto {
+  openingTime: string | null;
+  closingTime: string | null;
+  isClosed: boolean;
+}
+export interface CreateSpecialOpeningHoursDto extends UpdateSpecialOpeningHoursDto {
+  date: string;
+}
+export interface SpecialOpeningHours extends CreateSpecialOpeningHoursDto {
+  id: number;
+}

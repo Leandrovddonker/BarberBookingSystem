@@ -11,29 +11,19 @@ public class OpeningHourService(BarberSystemDbContext context) : IOpeningHoursSe
 {
     public async Task<OpeningHoursDto> AddOpeningHoursAsync(OpeningHoursDto openingHours)
     {
-        if (!TimeSpan.TryParse(openingHours.OpeningTime, out var open))
-        {
-            throw new ArgumentException("OpeningTime must be in format HH:mm:ss");
-        }
-
-        if (!TimeSpan.TryParse(openingHours.ClosingTime, out var close))
-        {
-            throw new ArgumentException("ClosingTime must be in format HH:mm:ss");
-        }
-        
         var newOpeningHours = new OpeningHours()
         {
             Day = openingHours.Day,
-            OpeningTime = TimeSpan.Parse(openingHours.OpeningTime),
-            ClosingTime = TimeSpan.Parse(openingHours.ClosingTime)
+            OpeningTime = openingHours.OpeningTime,
+            ClosingTime = openingHours.ClosingTime
         };
         context.Add(newOpeningHours);
         await context.SaveChangesAsync();
         return new OpeningHoursDto()
         {
             Day = newOpeningHours.Day,
-            OpeningTime = newOpeningHours.OpeningTime.ToString(@"hh\:mm\:ss"),
-            ClosingTime = newOpeningHours.ClosingTime.ToString(@"hh\:mm\:ss")
+            OpeningTime = newOpeningHours.OpeningTime,
+            ClosingTime = newOpeningHours.ClosingTime
         };
     }
 
@@ -49,8 +39,8 @@ public class OpeningHourService(BarberSystemDbContext context) : IOpeningHoursSe
         if (oh != null)
         {
             oh.Day = openingHours.Day;
-            oh.OpeningTime = TimeSpan.Parse(openingHours.OpeningTime);
-            oh.ClosingTime = TimeSpan.Parse(openingHours.ClosingTime);
+            oh.OpeningTime = openingHours.OpeningTime;
+            oh.ClosingTime = openingHours.ClosingTime;
         }
         await context.SaveChangesAsync();
         return openingHours;

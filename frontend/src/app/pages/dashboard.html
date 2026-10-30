@@ -57,7 +57,7 @@
             }}
           </p>
           @if (role === 'Admin') {
-            <p>{{ userName(reservation.userId) }}</p>
+            <p>{{ userName(reservation.userId)}} · {{ userMail(reservation.userId)}}</p>
           }
         </div>
         <div class="reservation-actions">

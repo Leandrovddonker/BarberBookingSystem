@@ -19,6 +19,7 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IBarberService, BarberService>();
 builder.Services.AddScoped<IOpeningHoursService, OpeningHourService>();
 builder.Services.AddScoped<IReservationService, ReservationService>();
+builder.Services.AddScoped<ISpecialOpeningHoursService, SpecialOpeningHoursService>();
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddProblemDetails();
 
